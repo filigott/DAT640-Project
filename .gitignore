@@ -1,4 +1,7 @@
 **dialogue_export
+**node_modules
+**db
+**sqlite
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
