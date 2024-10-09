@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Boilerplate</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script
+        type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/iaigroup-chatwidget@latest/build/bundle.min.js"
+    ></script>
+</head>
+<body>
+
+    <div class="container">
+
+        <div class="header main-flex">  
+            <h1>Welcome to Flask!</h1>
+            <p>This is a basic Flask boilerplate.</p>
+        </div>
+
+        <div id="customContainerId"></div>
+
+        <div class="playlist main-flex">
+            {% if playlist %}
+            <h2>{{ playlist.name }}</h2>
+            <p>{{ playlist.description }}</p>
+            <h3>Songs in this playlist:</h3>
+            <ul>
+                {% for song in playlist.songs %}
+                    <li>
+                        {{ song.title }} by {{ song.artist }} (Album: {{ song.album }}, Year: {{ song.year }})
+                        <form action="{{ url_for('main.remove_song', song_id=song.id) }}" method="post" style="display:inline;">
+                            <button type="submit">Remove</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+                <p>No playlists available.</p>
+            {% endif %}
+        </div>
+         
+        <div class="add-song">
+            <h3>Add a Song to the Playlist:</h3>
+            <form id="addSongForm">
+                <select name="song_id" id="songSelect">
+                    {% for song in songs %}
+                        <option value="{{ song.id }}">{{ song.title }} by {{ song.artist }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Add Song</button>
+            </form>
+        </div>
+
+
+    <script src="{{ url_for('static', filename='js/script.js') }}">
+    
+    // Function to add a song asynchronously
+    document.getElementById("addSongForm").addEventListener("submit", function(event) {
+        event.preventDefault(); // Prevent default form submission
+
+        // Get the selected song ID
+        const songId = document.getElementById("songSelect").value;
+
+        // Send AJAX request to the server to add the song
+        fetch("{{ url_for('main.add_song') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: "song_id=" + songId,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Song successfully added, you can now update the playlist in the DOM
+                updatePlaylistUI(data.updated_playlist);  // Call a function to refresh the playlist UI
+            } else {
+                alert("Failed to add the song.");
+            }
+        });
+    });
+
+    // Function to update the playlist UI
+    function updatePlaylistUI(updatedPlaylist) {
+        // Clear the existing list
+        const playlistUl = document.querySelector(".playlist ul");
+        playlistUl.innerHTML = "";
+
+        // Add updated songs
+        updatedPlaylist.songs.forEach(song => {
+            const li = document.createElement("li");
+            li.innerHTML = `${song.title} by ${song.artist} (Album: ${song.album}, Year: ${song.year}) 
+                <form action="/remove_song/${song.id}" method="post" style="display:inline;">
+                    <button type="submit">Remove</button>
+                </form>`;
+            playlistUl.appendChild(li);
+        });
+    }
+    </script>
+</body>
+</html>
