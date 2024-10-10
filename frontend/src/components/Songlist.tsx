@@ -25,9 +25,13 @@ const SongListComponent: React.FC<SongListProps> = ({ playlistId, songsNotInPlay
       <ul>
         {songsNotInPlaylist.length > 0 ? (
           songsNotInPlaylist.map((song) => (
-            <li key={song.id}>
-              {song.title} by {song.artist}
-              <button onClick={() => handleAddSong(song.id)}>Add</button>
+            <li key={song.id} className="song-item">
+              <div className="song-details">
+                <span className="song-title">{song.title}</span> by <span className="song-artist">{song.artist}</span>
+                {song.album && <span className="song-album"> | Album: {song.album}</span>}
+                {song.year && <span className="song-year"> | Year: {song.year}</span>}
+              </div>
+              <button className="add-song-btn" onClick={() => handleAddSong(song.id)}>Add</button>
             </li>
           ))
         ) : (
