@@ -22,7 +22,7 @@ def get_songs_not_in_playlist(db: Session, playlist_id: int):
     return [song for song in all_songs if song not in playlist.songs]
 
 
-def add_song_to_playlist(db: Session, playlist_id: int, song_id: int):
+async def add_song_to_playlist(db: Session, playlist_id: int, song_id: int):
     playlist = get_playlist(db, playlist_id)
     song = db.query(SongModel).filter(SongModel.id == song_id).first()
     if playlist and song and song not in playlist.songs:
@@ -30,7 +30,7 @@ def add_song_to_playlist(db: Session, playlist_id: int, song_id: int):
         db.commit()
 
 
-def remove_song_from_playlist(db: Session, playlist_id: int, song_id: int):
+async def remove_song_from_playlist(db: Session, playlist_id: int, song_id: int):
     playlist = get_playlist(db, playlist_id)
     song = db.query(SongModel).filter(SongModel.id == song_id).first()
     if playlist and song and song in playlist.songs:

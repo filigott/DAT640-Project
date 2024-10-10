@@ -16,6 +16,30 @@ const App: React.FC = () => {
   useEffect(() => {
     fetchPlaylist();
     fetchSongsNotInPlaylist();
+
+    // Establish WebSocket connection on mount
+    const ws = new WebSocket("ws://localhost:8000/ws/playlist")
+
+    ws.onmessage = (event) => {
+      // Handle incoming messages (e.g., playlist updates)
+      const message = event.data;
+      console.log("Received from server:", message);
+
+      // Parse the message if it's JSON (optional)
+      const updatedPlaylistId = JSON.parse(message);
+
+      console.log(updatedPlaylistId)
+
+      // Update the playlist if a new song is added or removed
+      if (updatedPlaylistId === playlistId) {
+        fetchPlaylist();
+        fetchSongsNotInPlaylist();
+      }
+    };
+
+    return () => {
+      ws.close(); // Clean up WebSocket connection on component unmount
+    };
   }, []);
 
   const fetchPlaylist = async () => {
