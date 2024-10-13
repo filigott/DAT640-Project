@@ -9,6 +9,7 @@ from .database import engine, Base, get_db
 from .crud import (
     add_song_to_playlist,
     bot_get_song_id,
+    bot_get_song_id_by_name,
     remove_song_from_playlist,
     get_playlist,
     get_songs_not_in_playlist,
@@ -63,10 +64,9 @@ def read_songs_not_in_playlist(playlist_id: int, db: Session = Depends(get_db)):
 # Add a song to a specific playlist
 @app.post("/playlist/{playlist_id}/add_song/{song_id}")
 async def add_song(playlist_id: int, song_id: int, db: Session = Depends(get_db)):
-    song =await add_song_to_playlist(db, playlist_id, song_id)
+    await add_song_to_playlist(db, playlist_id, song_id)
     message = {"updated_playlist_id": playlist_id}
     await ws_manager.broadcast(json.dumps(message)) 
-    print(song.title)
     return {"message": "Song added to the playlist"}
 
 # Remove a song from a specific playlist
@@ -76,6 +76,18 @@ async def remove_song(playlist_id: int, song_id: int, db: Session = Depends(get_
     message = {"updated_playlist_id": playlist_id}
     await ws_manager.broadcast(json.dumps(message))  
     return {"message": "Song removed from the playlist"}
+
+# Clear a playlist
+@app.post("/playlist/{playlist_id}/clear")
+async def clear_playlist(playlist_id: int, db: Session = Depends(get_db)):
+    playlist = get_playlist(db, playlist_id)
+    if not playlist:
+        raise HTTPException(status_code=404, detail="Playlist not found")
+    playlist.songs = []
+    db.commit()
+    message = {"updated_playlist_id": playlist_id}
+    await ws_manager.broadcast(json.dumps(message))  
+    return {"message": "Playlist cleared"}
 
 @app.websocket("/ws/playlist")
 async def websocket_endpoint(websocket: WebSocket):
@@ -98,11 +110,13 @@ async def test_add_song_ws(playlist_id: int, song_id: int, db: Session = Depends
     return {"message": "Song added and broadcasted"}
 
 
+
+
 # Simulate playlist update and broadcast it to all connected clients
 @app.post("/bot/get_song_id")
 async def bot_get_song(request: Request, db: Session = Depends(get_db)):
     print(await request.json())
-    id = bot_get_song_id(db, await request.json())
+    id = bot_get_song_id_by_name(db, await request.json())
     # Broadcast the updated playlist to all connected WebSocket clients
     
     return {"song_id": id}

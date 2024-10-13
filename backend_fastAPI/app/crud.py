@@ -39,6 +39,8 @@ async def remove_song_from_playlist(db: Session, playlist_id: int, song_id: int)
         playlist.songs.remove(song)
         db.commit()
 
+
+# Does not work
 def bot_get_song_id(db: Session, song_description: dict) -> int:
     # Build the query conditions based on the provided description
     filters = []
@@ -57,3 +59,10 @@ def bot_get_song_id(db: Session, song_description: dict) -> int:
         return song.id if song else None
     except Exception as e:
         return None
+    
+
+def bot_get_song_id_by_name(db: Session, song_description: str) -> int:
+    song_name = song_description["data"].get("title")
+    print("song name: ", song_name)
+    song = db.query(SongModel).filter(SongModel.title == song_name).first()
+    return song.id if song else None
