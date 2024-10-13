@@ -10,6 +10,7 @@ from .crud import (
     add_song_to_playlist,
     bot_get_song_id,
     bot_get_song_id_by_name,
+    db_clear_playlist,
     remove_song_from_playlist,
     get_playlist,
     get_songs_not_in_playlist,
@@ -80,11 +81,7 @@ async def remove_song(playlist_id: int, song_id: int, db: Session = Depends(get_
 # Clear a playlist
 @app.post("/playlist/{playlist_id}/clear")
 async def clear_playlist(playlist_id: int, db: Session = Depends(get_db)):
-    playlist = get_playlist(db, playlist_id)
-    if not playlist:
-        raise HTTPException(status_code=404, detail="Playlist not found")
-    playlist.songs = []
-    db.commit()
+    await db_clear_playlist(db, playlist_id)
     message = {"updated_playlist_id": playlist_id}
     await ws_manager.broadcast(json.dumps(message))  
     return {"message": "Playlist cleared"}

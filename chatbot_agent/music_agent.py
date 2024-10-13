@@ -98,8 +98,8 @@ class MusicAgent(Agent):
 
         self._dialogue_connector.register_agent_utterance(utterance)
     
-    def clear(self) -> None:
-        resp = requests.get(fast_api_endpoint + "/clear").json()
+    def clear(self, playlist_id = 1) -> None:
+        resp = requests.post(fast_api_endpoint + f"/playlist/{playlist_id}/clear").json()
         answer = resp.get("message")
         utterance = AnnotatedUtterance(
             answer,
@@ -137,7 +137,7 @@ class MusicAgent(Agent):
             playlist_id = 1
             self.view(playlist_id)
         
-        if utterance.text == "/clear":
+        if utternace_text_split[0] == "/clear":
             self.clear()
 
         # response = AnnotatedUtterance(

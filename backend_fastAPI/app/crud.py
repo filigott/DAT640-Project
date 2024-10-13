@@ -39,6 +39,12 @@ async def remove_song_from_playlist(db: Session, playlist_id: int, song_id: int)
         playlist.songs.remove(song)
         db.commit()
 
+async def db_clear_playlist(db: Session, playlist_id: int):
+    playlist = get_playlist(db, playlist_id)
+    if playlist:
+        playlist.songs = []
+        db.commit()
+
 
 # Does not work
 def bot_get_song_id(db: Session, song_description: dict) -> int:
