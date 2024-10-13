@@ -1,6 +1,6 @@
 import json
 from typing import List
-from fastapi import FastAPI, Depends, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from .websocket import WSConnectionManager
 
@@ -8,6 +8,7 @@ from .init_db import seed_db
 from .database import engine, Base, get_db
 from .crud import (
     add_song_to_playlist,
+    bot_get_song_id,
     remove_song_from_playlist,
     get_playlist,
     get_songs_not_in_playlist,
@@ -62,9 +63,10 @@ def read_songs_not_in_playlist(playlist_id: int, db: Session = Depends(get_db)):
 # Add a song to a specific playlist
 @app.post("/playlist/{playlist_id}/add_song/{song_id}")
 async def add_song(playlist_id: int, song_id: int, db: Session = Depends(get_db)):
-    await add_song_to_playlist(db, playlist_id, song_id)
+    song =await add_song_to_playlist(db, playlist_id, song_id)
     message = {"updated_playlist_id": playlist_id}
     await ws_manager.broadcast(json.dumps(message)) 
+    print(song.title)
     return {"message": "Song added to the playlist"}
 
 # Remove a song from a specific playlist
@@ -94,3 +96,13 @@ async def test_add_song_ws(playlist_id: int, song_id: int, db: Session = Depends
     message = {"updated_playlist_id": playlist_id}
     await ws_manager.broadcast(json.dumps(message))  
     return {"message": "Song added and broadcasted"}
+
+
+# Simulate playlist update and broadcast it to all connected clients
+@app.post("/bot/get_song_id")
+async def bot_get_song(request: Request, db: Session = Depends(get_db)):
+    print(await request.json())
+    id = bot_get_song_id(db, await request.json())
+    # Broadcast the updated playlist to all connected WebSocket clients
+    
+    return {"song_id": id}

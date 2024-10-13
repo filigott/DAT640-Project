@@ -37,8 +37,38 @@ class MusicAgent(Agent):
         )
         self._dialogue_connector.register_agent_utterance(utterance)
 
-    def add(self, song) -> None:
-        resp = requests.post(fast_api_endpoint + "/add", json={"data": song}).json()
+    def view(self, playlist_id: int) -> None:
+        resp = requests.get(fast_api_endpoint + f"/playlist/{playlist_id}")
+
+        playlist_json = resp.json()
+
+        playlist_name = playlist_json.get("name", "Unnamed Playlist")
+        songs = playlist_json.get("songs", [])
+
+
+        # song_titles = ", ".join(song.get("title", "Unnamed Song") for song in songs)
+        song_titles = ", ".join(f"{song.get('title', 'Unnamed Song')} ({song.get('artist', 'Unknown Artist')}, {song.get('year', 'Unknown Year')})" for song in songs)
+
+        answer = f"Your playlist '{playlist_name}' includes the following songs: {song_titles}"
+        utterance1 = AnnotatedUtterance(
+            answer,
+            participant=DialogueParticipant.AGENT,
+        )
+
+        self._dialogue_connector.register_agent_utterance(utterance1)
+        # self._dialogue_connector.register_agent_utterance(utterance)
+
+    def add(self, title="", artist="", album="", playlist_id = 1) -> None:
+        song_description = {
+            "artist": artist,
+            "title": title,
+            "album": album
+        }
+        resp = requests.post(fast_api_endpoint + "/bot/get_song_id", json={"data": song_description}).json()
+        
+        song_id = resp.get("song_id")
+
+        resp = requests.post(fast_api_endpoint + f"/playlist/{playlist_id}/add_song/{song_id}").json()
         answer = resp.get("message")
         utterance = AnnotatedUtterance(
             answer,
@@ -82,13 +112,19 @@ class MusicAgent(Agent):
             self.goodbye()
             return
         
+        # Currently only by title of song
         if utternace_text_split[0] == "/add":
-            song = utternace_text_split[1]
-            self.add(song)
+            song_title = "".join(utternace_text_split[1:])
+            self.add(song_title)
 
         if utternace_text_split[0] == "/remove":
             song = utternace_text_split[1]
             self.remove(song)
+
+        if utternace_text_split[0] == "/view":
+            # playlist_id = utternace_text_split[1]
+            playlist_id = 1
+            self.view(playlist_id)
         
         if utterance.text == "/clear":
             self.clear()
