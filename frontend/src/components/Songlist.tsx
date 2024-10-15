@@ -1,7 +1,5 @@
-// src/components/SongListComponent.tsx
-import React from "react";
+import React, { useState } from "react";
 import { Song } from "../types";
-import axios from "axios";
 
 interface SongListProps {
   playlistId: number; // Pass the playlist ID as a prop
@@ -9,29 +7,41 @@ interface SongListProps {
   onSongAdded: (songId: number) => void; // Callback for when a song is added
 }
 
-const SongListComponent: React.FC<SongListProps> = ({ playlistId, songsNotInPlaylist, onSongAdded }) => {
-  const handleAddSong = async (songId: number) => {
-    try {
-      await axios.post(`/api/playlist/${playlistId}/add_song/${songId}`);
-      onSongAdded(songId); // Notify parent to remove song from available list
-    } catch (error) {
-      console.error("Error adding song:", error);
-    }
-  };
+const numSongsToDisplay = 10;
+
+const SongListComponent: React.FC<SongListProps> = ({ songsNotInPlaylist, onSongAdded }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Filter songs based on the search term
+  const filteredSongs = songsNotInPlaylist.filter((song) =>
+    song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    song.artist && song.artist.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="song-list">
       <h2>Songs Available to Add</h2>
+      
+      {/* Search Box */}
+      <input
+        type="text"
+        placeholder="Search by title or artist..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="search-box"
+      />
+
       <ul>
-        {songsNotInPlaylist.length > 0 ? (
-          songsNotInPlaylist.map((song) => (
+        {filteredSongs.length > 0 ? (
+          // Display only the first N songs
+          filteredSongs.slice(0, numSongsToDisplay).map((song) => ( 
             <li key={song.id} className="song-item">
               <div className="song-details">
                 <span className="song-title">{song.title}</span> by <span className="song-artist">{song.artist}</span>
                 {song.album && <span className="song-album"> | Album: {song.album}</span>}
                 {song.year && <span className="song-year"> | Year: {song.year}</span>}
               </div>
-              <button className="add-song-btn" onClick={() => handleAddSong(song.id)}>Add</button>
+              <button className="add-song-btn" onClick={() => onSongAdded(song.id)}>Add</button>
             </li>
           ))
         ) : (
