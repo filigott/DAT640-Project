@@ -11,7 +11,7 @@ cd ..
 # # Navigate to Flask backend directory and start the server
 # echo "Starting Flask server..."
 # cd chatbot_agent
-# python3 chat_bot.py &
+# python3 run_chat_bot.py &
 # FLASK_PID=$!
 # echo "Flask server started with PID: $FLASK_PID"
 # cd ..
