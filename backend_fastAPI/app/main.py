@@ -1,5 +1,3 @@
-import json
-from typing import List
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -21,10 +19,10 @@ app.include_router(websocket_routes.router)
 
 
 # Endpoint to seed the database
-@app.get("/seed")
+@app.post("/seed")
 def seed_database(db: Session = Depends(get_db)):
     try:
-        seed_db(db)  # Seed the database with demo data
+        reset_and_seed_db_demo(db)  # Seed the database with demo data
         return {"message": "Database seeded successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
