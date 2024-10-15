@@ -1,7 +1,5 @@
-// src/components/PlaylistComponent.tsx
 import React from "react";
 import { Playlist, Song } from "../types";
-import axios from "axios";
 
 interface PlaylistProps {
   playlist: Playlist;
@@ -9,18 +7,9 @@ interface PlaylistProps {
 }
 
 const PlaylistComponent: React.FC<PlaylistProps> = ({ playlist, onSongRemoved }) => {
-  const handleRemoveSong = async (songId: number) => {
-    try {
-      await axios.post(`/api/playlist/${playlist.id}/remove_song/${songId}`);
-      onSongRemoved(songId); // Notify parent component to update state
-    } catch (error) {
-      console.error("Error removing song:", error);
-    }
-  };
-
   return (
     <div className="playlist">
-      <h2>{playlist.name}</h2>
+      <h2>{playlist.title}</h2>
       <ul>
         {playlist.songs?.length ? (
           playlist.songs.map((song: Song) => (
@@ -30,7 +19,7 @@ const PlaylistComponent: React.FC<PlaylistProps> = ({ playlist, onSongRemoved })
                 {song.album && <span className="song-album"> | Album: {song.album}</span>}
                 {song.year && <span className="song-year"> | Year: {song.year}</span>}
               </div>
-              <button className="remove-song-btn" onClick={() => handleRemoveSong(song.id)}>Delete</button>
+              <button className="remove-song-btn" onClick={() => onSongRemoved(song.id)}>Delete</button>
             </li>
           ))
         ) : (

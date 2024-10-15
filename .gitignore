@@ -3,6 +3,7 @@
 **db
 **sqlite
 **package-lock.json
+**tsbuildinfo
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -6,6 +6,7 @@ const BACKEND_URL = "http://localhost:8000"
 export default defineConfig({
   plugins: [react()],
   server: {
+    port: 8001,
     proxy: {
       // Use a wildcard to proxy all API calls to the backend
       "/api": {
