@@ -76,7 +76,7 @@ def get_song_id(db: Session, song_description: dict) -> Optional[int]:
 
 def get_song_id_by_name(db: Session, song_description: dict) -> Optional[int]:
     """Get a song ID based on the song title."""
-    song_name = song_description.get("title")
+    song_name = song_description["data"].get("title")
     if not song_name:
         return None
     song: SongModel = db.query(SongModel).filter(SongModel.title == song_name).first()
