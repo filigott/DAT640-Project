@@ -81,3 +81,24 @@ def get_song_id_by_name(db: Session, song_description: dict) -> Optional[int]:
         return None
     song: SongModel = db.query(SongModel).filter(SongModel.title == song_name).first()
     return song.id if song else None
+
+def get_songs_by_name(db: Session, song_name: dict) -> List[SongModel]:
+    """Get a list of songs based on the song title."""
+    if not song_name:
+        return []
+    songs = db.query(SongModel).filter(SongModel.title == song_name).all()
+    return songs
+
+def get_songs_by_artist(db: Session, artist_name: dict) -> List[SongModel]:
+    """Get a list of songs based on the artist name."""
+    if not artist_name:
+        return []
+    songs = db.query(SongModel).filter(SongModel.artist == artist_name).all()
+    return songs
+
+def get_songs_by_album(db: Session, album_name: dict) -> List[SongModel]:
+    """Get a list of songs based on the album name."""
+    if not album_name:
+        return []
+    songs = db.query(SongModel).filter(SongModel.album == album_name).all()
+    return songs

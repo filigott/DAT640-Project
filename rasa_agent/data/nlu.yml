@@ -1,61 +1,184 @@
 version: "3.0"
 nlu:
-  - intent: ask_album_release_date
-    examples: |
-      - When was [Abbey Road](album) released?
-      - What is the release date of [Thriller](album)?
-      - When did [The Dark Side of the Moon](album) come out?
-      - Can you tell me the release year of [Back in Black](album)?
-      - Release date of [Nevermind](album)?
-      - When was [Rumours](album) published?
+- intent: ask_song_release_date
+  examples: |
+    - When was the song [Shape of You](song) released?
+    - Can you tell me the release date of [Bohemian Rhapsody](song)?
+    - What is the release year of the song [Imagine](song)?
+    - I want to know when the song [Thriller](song) came out.
+    - What year did [Billie Jean](song) release?
+    - Do you know the release date of [Smells Like Teen Spirit](song)?
+    - Tell me when [Yesterday](song) was released.
+    - When did the song [Wonderwall](song) come out?
+    - What year was [Like a Rolling Stone](song) released?
+    - Can you tell me the year [Purple Haze](song) was released?
+    - Do you know the release year of the song [Bad Guy](song)?
+    - When did [Sweet Child O' Mine](song) get released?
+    - What is the release date for the track [Uptown Funk](song)?
+    - when was the song [shape of you](song) released?
+    - can you tell me the release date of [bohemian rhapsody](song)?
+    - what is the release year of the song [imagine](song)?
+    - i want to know when the song [thriller](song) came out.
+    - what year did [billie jean](song) release?
+    - do you know the release date of [smells like teen spirit](song)?
+    - tell me when [yesterday](song) was released.
+    - when did the song [wonderwall](song) come out?
+    - what year was [like a rolling stone](song) released?
+    - can you tell me the year [purple haze](song) was released?
+    - do you know the release year of the song [bad guy](song)?
+    - when did [sweet child o' mine](song) get released?
+    - what is the release date for the track [uptown funk](song)?
 
-  - intent: ask_artist_album_count
-    examples: |
-      - How many albums has [The Beatles](artist) released?
-      - Number of albums by [Michael Jackson](artist)?
-      - How many albums did [Pink Floyd](artist) release?
-      - What is the total number of albums by [AC/DC](artist)?
-      - Can you tell me how many albums [Nirvana](artist) has?
-      - How many records has [Fleetwood Mac](artist) put out?
+- intent: ask_songs_of_artist
+  examples: |
+    - What songs does [Ed Sheeran](artist) have?
+    - List the songs by [Queen](artist).
+    - Can you show me the songs of [Adele](artist)?
+    - I want to know all the songs by [The Beatles](artist).
+    - Give me a list of songs by [Eminem](artist).
+    - Do you know the songs performed by [Michael Jackson](artist)?
+    - What tracks are there from [Taylor Swift](artist)?
+    - Tell me the songs by [Elvis Presley](artist).
+    - Can you name some songs by [Bob Dylan](artist)?
+    - I’m looking for songs by [The Rolling Stones](artist).
+    - What are the top hits from [Lady Gaga](artist)?
+    - Which tracks did [Bruno Mars](artist) sing?
+    - Show me songs sung by [Kanye West](artist).
+    - what songs does [ed sheeran](artist) have?
+    - list the songs by [queen](artist).
+    - can you show me the songs of [adele](artist)?
+    - i want to know all the songs by [the beatles](artist).
+    - give me a list of songs by [eminem](artist).
+    - do you know the songs performed by [michael jackson](artist)?
+    - what tracks are there from [taylor swift](artist)?
+    - tell me the songs by [elvis presley](artist).
+    - can you name some songs by [bob dylan](artist)?
+    - i’m looking for songs by [the rolling stones](artist).
+    - what are the top hits from [lady gaga](artist)?
+    - which tracks did [bruno mars](artist) sing?
+    - show me songs sung by [kanye west](artist).
 
-  - intent: ask_album_features_song
-    examples: |
-      - Which album features the song [Come Together](song)?
-      - What album is [Billie Jean](song) on?
-      - On which album can I find [Money](song)?
-      - [Highway to Hell](song) belongs to which album?
-      - Can you tell me which album [Smells Like Teen Spirit](song) is featured on?
-      - What record includes the track [Go Your Own Way](song)?
+- intent: ask_artist_of_song
+  examples: |
+    - Who has released the song [Shape of you](song)?
+    - Who has released [Shape of you]?
+    - Who released the song [Imagine](song)?
+    - Who released [Hotel California](song)?
+    - Who sings [Shape of You](song)?
+    - Tell me the artist of the song [Imagine](song).
+    - Who is the singer of [Stairway to Heaven](song)?
+    - Do you know the artist who performs [Hey Jude](song)?
+    - I want to know who sings [Hotel California](song).
+    - Who performed the song [Purple Rain](song)?
+    - Who's the artist behind [Billie Jean](song)?
+    - Can you tell me who sings [Rolling in the Deep](song)?
+    - Which artist is known for the song [Smells Like Teen Spirit](song)?
+    - Who's the musician for [Lose Yourself](song)?
+    - Which singer sang [Hallelujah](song)?
+    - Do you know who the singer of [Poker Face](song) is?
+    - What artist is associated with [Bohemian Rhapsody](song)?
+    - who sings [shape of you](song)?
+    - tell me the artist of the song [imagine](song).
+    - who is the singer of [stairway to heaven](song)?
+    - do you know the artist who performs [hey jude](song)?
+    - i want to know who sings [hotel california](song).
+    - who performed the song [purple rain](song)?
+    - who's the artist behind [billie jean](song)?
+    - can you tell me who sings [rolling in the deep](song)?
+    - which artist is known for the song [smells like teen spirit](song)?
+    - who's the musician for [lose yourself](song)?
+    - which singer sang [hallelujah](song)?
+    - do you know who the singer of [poker face](song) is?
+    - what artist is associated with [bohemian rhapsody](song)?
+
+- intent: ask_album_release_date
+  examples: |
+    - When was the album [Abbey Road](album) released?
+    - What is the release date of [21](album)?
+    - Tell me when the album [The Dark Side of the Moon](album) came out.
+    - Can you tell me the release year of [Thriller](album)?
+    - What year did the album [Back to Black](album) release?
+    - Do you know the release date of [Nevermind](album)?
+    - When did the album [The Wall](album) get released?
+    - What year was [Born to Run](album) released?
+    - Tell me the release year for the album [A Night at the Opera](album).
+    - When did [1989](album) come out?
+    - What year was the album [Hotel California](album) launched?
+    - Can you tell me the release date for [Goodbye Yellow Brick Road](album)?
+    - When was the album [OK Computer](album) first released?
+    - when was the album [abbey road](album) released?
+    - what is the release date of [21](album)?
+    - tell me when the album [the dark side of the moon](album) came out.
+    - can you tell me the release year of [thriller](album)?
+    - what year did the album [back to black](album) release?
+    - do you know the release date of [nevermind](album)?
+    - when did the album [the wall](album) get released?
+    - what year was [born to run](album) released?
+    - tell me the release year for the album [a night at the opera](album).
+    - when did [1989](album) come out?
+    - what year was the album [hotel california](album) launched?
+    - can you tell me the release date for [goodbye yellow brick road](album)?
+    - when was the album [ok computer](album) first released?
+
+- intent: ask_album_of_song
+  examples: |
+    - Which album is the song [Shape of You](song) from?
+    - What album does the song [Imagine](song) belong to?
+    - Can you tell me the album of the song [Let it Be](song)?
+    - I want to know the album of [Billie Jean](song).
+    - What is the album that includes [Hey Jude](song)?
+    - Which album features the track [Like a Prayer](song)?
+    - Do you know what album [Smells Like Teen Spirit](song) is in?
+    - Tell me the album that has [Sweet Child O' Mine](song).
+    - Which album includes the song [Rolling in the Deep](song)?
+    - On what album is [Bohemian Rhapsody](song) featured?
+    - Can you find the album for the song [Purple Rain](song)?
+    - What record contains the track [Lose Yourself](song)?
+    - What album can I find [Creep](song) on?
+    - which album is the song [shape of you](song) from?
+    - what album does the song [imagine](song) belong to?
+    - can you tell me the album of the song [let it be](song)?
+    - i want to know the album of [billie jean](song).
+    - what is the album that includes [hey jude](song)?
+    - which album features the track [like a prayer](song)?
+    - do you know what album [smells like teen spirit](song) is in?
+    - tell me the album that has [sweet child o' mine](song).
+    - which album includes the song [rolling in the deep](song)?
+    - on what album is [bohemian rhapsody](song) featured?
+    - can you find the album for the song [purple rain](song)?
+    - what record contains the track [lose yourself](song)?
+    - what album can i find [creep](song) on?
+
+- intent: ask_albums_of_artist
+  examples: |
+    - What albums does [Pink Floyd](artist) have?
+    - Can you list the albums of [Adele](artist)?
+    - Tell me the albums by [Led Zeppelin](artist).
+    - I want to know the albums released by [The Rolling Stones](artist).
+    - Give me a list of albums by [Beyoncé](artist).
+    - What records has [Elton John](artist) released?
+    - Name the albums from [Radiohead](artist).
+    - Can you show me all the albums by [Taylor Swift](artist)?
+    - What are the albums put out by [Bob Marley](artist)?
+    - Tell me the discography of [Metallica](artist).
+    - Which albums did [Nirvana](artist) release?
+    - List all the albums recorded by [Bruce Springsteen](artist).
+    - Do you know the albums from [Frank Sinatra](artist)?
+    - what albums does [pink floyd](artist) have?
+    - can you list the albums of [adele](artist)?
+    - tell me the albums by [led zeppelin](artist).
+    - i want to know the albums released by [the rolling stones](artist).
+    - give me a list of albums by [beyoncé](artist).
+    - what records has [elton john](artist) released?
+    - name the albums from [radiohead](artist).
+    - can you show me all the albums by [taylor swift](artist)?
+    - what are the albums put out by [bob marley](artist)?
+    - tell me the discography of [metallica](artist).
+    - which albums did [nirvana](artist) release?
+    - list all the albums recorded by [bruce springsteen](artist).
+    - do you know the albums from [frank sinatra](artist)?
 
 entities:
-  - album
-  - artist
-  - song
-
-lookup_tables:
-  - name: album
-    elements: |
-      - Abbey Road
-      - Thriller
-      - The Dark Side of the Moon
-      - Back in Black
-      - Nevermind
-      - Rumours
-
-  - name: artist
-    elements: |
-      - The Beatles
-      - Michael Jackson
-      - Pink Floyd
-      - AC/DC
-      - Nirvana
-      - Fleetwood Mac
-
-  - name: song
-    elements: |
-      - Come Together
-      - Billie Jean
-      - Money
-      - Highway to Hell
-      - Smells Like Teen Spirit
-      - Go Your Own Way
+- song
+- artist
+- album

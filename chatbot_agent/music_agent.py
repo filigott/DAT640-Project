@@ -9,6 +9,27 @@ import requests
 import time
 
 fast_api_endpoint = "http://localhost:8000"
+hardcoded_commands = ["/add", "/remove", "/view", "/clear"]
+rasa_url = "http://localhost:5005/model/parse"
+
+
+intents = {
+    "ask_song_release_date": f"{fast_api_endpoint}/bot/song_release_date",
+    "ask_songs_of_artist": f"{fast_api_endpoint}/bot/songs_of_artist",
+    "ask_artist_of_song": f"{fast_api_endpoint}/bot/artist_of_song",
+    "ask_album_release_date": f"{fast_api_endpoint}/bot/album_release_date",
+    "ask_album_of_song": f"{fast_api_endpoint}/bot/album_of_song",
+    "ask_albums_of_artist": f"{fast_api_endpoint}/bot/albums_of_artist"
+}
+
+entities = {
+    "ask_song_release_date": "song",
+    "ask_songs_of_artist": "artist",
+    "ask_artist_of_song": "song",
+    "ask_album_release_date": "album",
+    "ask_album_of_song": "song",
+    "ask_albums_of_artist": "artist"
+}
 
 class MusicAgent(Agent):
     def __init__(self, agent_id: str):
@@ -111,14 +132,76 @@ class MusicAgent(Agent):
         self._dialogue_connector.register_agent_utterance(utterance)
     
     def clear(self, playlist_id = 1) -> None:
-        resp = requests.post(fast_api_endpoint + f"/playlist/{playlist_id}/clear").json()
-        answer = resp.get("message")
+        resp = requests.post(fast_api_endpoint + f"/playlist/{playlist_id}/clear")
+        
+        if resp.status_code != 200:
+            answer = "Could not clear playlist"
+            utterance = AnnotatedUtterance(
+                answer,
+                participant=DialogueParticipant.AGENT,
+            )
+            self._dialogue_connector.register_agent_utterance(utterance)
+            return
         utterance = AnnotatedUtterance(
             answer,
             participant=DialogueParticipant.AGENT,
         )
 
         self._dialogue_connector.register_agent_utterance(utterance)
+
+    def rasa(self, input) -> None:
+        rasa_resp = requests.post(rasa_url, json={"text": input}).json()
+        print(rasa_resp)
+        intent = rasa_resp.get("intent").get("name")
+        intent_confidence = rasa_resp.get("intent").get("confidence")
+        entity = rasa_resp.get("entities")[0].get("entity")
+        entity_confidence = rasa_resp.get("entities")[0].get("confidence_entity")
+        entity_value = rasa_resp.get("entities")[0].get("value")
+        entity_values = rasa_resp.get("entities")
+        print("intent: ", intent)
+        print("confidence: ", intent_confidence)
+        print("entity: ", entity)
+        print("entity confidence: ", entity_confidence)
+
+        
+        ## Ensure high confidence and right entity for the intent
+        if intent_confidence > 0.99 and entity == entities.get(intent):
+            endpoint = intents.get(intent)
+            resp = requests.post(endpoint, json={"data": entity_values})
+
+            if resp.status_code == 400:
+                utterance = AnnotatedUtterance(
+                    "Need more information",
+                    participant=DialogueParticipant.AGENT,
+                )
+                self._dialogue_connector.register_agent_utterance(utterance)
+
+                ## Handle more information here (?)
+                return
+            
+            if resp.status_code == 404:
+                utterance = AnnotatedUtterance(
+                    "Could not find what you were looking for",
+                    participant=DialogueParticipant.AGENT,
+                )
+                self._dialogue_connector.register_agent_utterance(utterance)
+                return
+            
+            if resp.status_code == 200:
+                answer = resp.json().get("message")
+                utterance = AnnotatedUtterance(
+                    answer,
+                    participant=DialogueParticipant.AGENT,
+                )
+                self._dialogue_connector.register_agent_utterance(utterance)
+        else:
+            utterance = AnnotatedUtterance(
+                "I'm sorry, I didn't understand that",
+                participant=DialogueParticipant.AGENT,
+            )
+            self._dialogue_connector.register_agent_utterance(utterance)
+            
+
 
     def receive_utterance(self, utterance: Utterance) -> None:
         """Gets called each time there is a new user utterance.
@@ -135,7 +218,7 @@ class MusicAgent(Agent):
             self.goodbye()
             return
         
-        # Currently only by title of song
+        # Hardcoded commands
         if utternace_text_split[0] == "/add":
             song_title = " ".join(utternace_text_split[1:])
             self.add(title = song_title)
@@ -151,6 +234,13 @@ class MusicAgent(Agent):
         
         if utternace_text_split[0] == "/clear":
             self.clear()
+
+
+        # RASA for general questions
+        if utternace_text_split[0] not in hardcoded_commands :
+            self.rasa(utterance.text)
+        
+
 
         # response = AnnotatedUtterance(
         #     "(Parroting) " + utterance.text,
