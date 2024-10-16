@@ -4,7 +4,9 @@ from dialoguekit.core.annotated_utterance import AnnotatedUtterance
 from dialoguekit.core.utterance import Utterance
 from dialoguekit.participant.agent import Agent
 from dialoguekit.participant.participant import DialogueParticipant
+from dialoguekit.nlu.models.diet_classifier_rasa import IntentClassifierRasa
 import requests
+import time
 
 fast_api_endpoint = "http://localhost:8000"
 
@@ -64,15 +66,21 @@ class MusicAgent(Agent):
             "title": title,
             "album": album
         }
-        resp = requests.post(fast_api_endpoint + "/bot/get_song_id", json={"data": song_description}).json()
-        
-        song_id = resp.get("song_id")
-        print("song_id: ", song_id)
+        time_start = time.time()
+        resp = requests.post(fast_api_endpoint + "/bot/add_song", json={"data": song_description})
+        print("resp: ", resp)   
+        if resp.status_code != 200:
+            answer = "Song not found"
+            utterance = AnnotatedUtterance(
+                answer,
+                participant=DialogueParticipant.AGENT,
+            )
+            self._dialogue_connector.register_agent_utterance(utterance)
+            return
+        time_end = time.time()
 
-        resp = requests.post(fast_api_endpoint + f"/playlist/{playlist_id}/add_song/{song_id}").json()
-        answer = resp.get("message")
         utterance = AnnotatedUtterance(
-            answer,
+            f"Song added to playlist. Time taken: {time_end - time_start}",
             participant=DialogueParticipant.AGENT,
         )
 
@@ -84,15 +92,19 @@ class MusicAgent(Agent):
             "title": title,
             "album": album
         }
-        resp = requests.post(fast_api_endpoint + "/bot/get_song_id", json={"data": song_description}).json()
+        resp = requests.post(fast_api_endpoint + "/bot/remove_song", json={"data": song_description})
 
-        song_id = resp.get("song_id")
-        print("song_id: ", song_id)
-
-        resp = requests.post(fast_api_endpoint + f"/playlist/{playlist_id}/remove_song/{song_id}").json()
-        answer = resp.get("message")
+        if resp.status_code != 200:
+            answer = "Song not found"
+            utterance = AnnotatedUtterance(
+                answer,
+                participant=DialogueParticipant.AGENT,
+            )
+            self._dialogue_connector.register_agent_utterance(utterance)
+            return
+       
         utterance = AnnotatedUtterance(
-            answer,
+            "Song removed from playlist.",
             participant=DialogueParticipant.AGENT,
         )
 

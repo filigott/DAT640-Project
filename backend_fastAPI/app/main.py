@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from .routers import  client_only_routes, playlist_routes, song_routes, websocket_routes
+from .routers import  client_only_routes, playlist_routes, song_routes, websocket_routes, bot_routes
 
 from .init_db import reset_and_seed_db_demo
 from .database import engine, DB_Base, get_db
@@ -16,6 +16,7 @@ app.include_router(client_only_routes.router)
 app.include_router(playlist_routes.router)
 app.include_router(song_routes.router)
 app.include_router(websocket_routes.router)
+app.include_router(bot_routes.router)
 
 
 # Endpoint to seed the database

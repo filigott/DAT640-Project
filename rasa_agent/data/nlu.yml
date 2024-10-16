@@ -1,0 +1,61 @@
+version: "3.0"
+nlu:
+  - intent: ask_album_release_date
+    examples: |
+      - When was [Abbey Road](album) released?
+      - What is the release date of [Thriller](album)?
+      - When did [The Dark Side of the Moon](album) come out?
+      - Can you tell me the release year of [Back in Black](album)?
+      - Release date of [Nevermind](album)?
+      - When was [Rumours](album) published?
+
+  - intent: ask_artist_album_count
+    examples: |
+      - How many albums has [The Beatles](artist) released?
+      - Number of albums by [Michael Jackson](artist)?
+      - How many albums did [Pink Floyd](artist) release?
+      - What is the total number of albums by [AC/DC](artist)?
+      - Can you tell me how many albums [Nirvana](artist) has?
+      - How many records has [Fleetwood Mac](artist) put out?
+
+  - intent: ask_album_features_song
+    examples: |
+      - Which album features the song [Come Together](song)?
+      - What album is [Billie Jean](song) on?
+      - On which album can I find [Money](song)?
+      - [Highway to Hell](song) belongs to which album?
+      - Can you tell me which album [Smells Like Teen Spirit](song) is featured on?
+      - What record includes the track [Go Your Own Way](song)?
+
+entities:
+  - album
+  - artist
+  - song
+
+lookup_tables:
+  - name: album
+    elements: |
+      - Abbey Road
+      - Thriller
+      - The Dark Side of the Moon
+      - Back in Black
+      - Nevermind
+      - Rumours
+
+  - name: artist
+    elements: |
+      - The Beatles
+      - Michael Jackson
+      - Pink Floyd
+      - AC/DC
+      - Nirvana
+      - Fleetwood Mac
+
+  - name: song
+    elements: |
+      - Come Together
+      - Billie Jean
+      - Money
+      - Highway to Hell
+      - Smells Like Teen Spirit
+      - Go Your Own Way

@@ -27,12 +27,11 @@ const App: React.FC = () => {
       console.log("Received from server:", message);
 
       // Parse the message if it's JSON (optional)
-      const updatedPlaylistId = JSON.parse(message);
-
-      console.log(updatedPlaylistId)
+      const updatedPlaylistId = JSON.parse(message).updated_playlist_id;
 
       // Update the playlist if a new song is added or removed
       if (updatedPlaylistId === playlistId) {
+        console.log("Updating playlist...");
         fetchPlaylist();
         fetchSongsNotInPlaylist();
       }
