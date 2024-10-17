@@ -1,9 +1,11 @@
 **dialogue_export
 **node_modules
-**db
-**sqlite
 **package-lock.json
 **tsbuildinfo
+**.vscode
+**.db
+**.sqlite
+**data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

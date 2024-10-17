@@ -7,7 +7,7 @@ from sqlalchemy.orm import relationship
 from .database import DB_Base
 
 # Many-to-Many Association Table for songs and playlists
-playlist_songs_table = Table(
+PlaylistSongsTable = Table(
     'playlist_songs',
     DB_Base.metadata,
     Column('playlist_id', Integer, ForeignKey('playlists.id'), primary_key=True),
@@ -22,8 +22,9 @@ class SongModel(DB_Base):
     artist = Column(String, nullable=False)
     album = Column(String)
     year = Column(Integer)
+    duration = Column(Integer)
 
-    playlists = relationship('PlaylistModel', secondary=playlist_songs_table, back_populates='songs')
+    playlists = relationship('PlaylistModel', secondary=PlaylistSongsTable, back_populates='songs')
 
 class PlaylistModel(DB_Base):
     __tablename__ = 'playlists'
@@ -31,7 +32,7 @@ class PlaylistModel(DB_Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
 
-    songs = relationship('SongModel', secondary=playlist_songs_table, back_populates='playlists')
+    songs = relationship('SongModel', secondary=PlaylistSongsTable, back_populates='playlists')
 
 
 # # Many-to-Many Association Table for songs and playlists

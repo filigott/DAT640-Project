@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from .models import PlaylistModel, SongModel
 from .schemas import PlaylistSchema, SongSchema
 
+MAX_NUM_SONGS_SEARCH = 10
 
 def get_all_playlists(db: Session) -> List[PlaylistModel]:
     """Retrieve all playlists from the database as raw models."""
@@ -17,14 +18,23 @@ def get_playlist(db: Session, playlist_id: int) -> Optional[PlaylistModel]:
     """Retrieve a specific playlist by ID and return the raw model."""
     return db.query(PlaylistModel).filter(PlaylistModel.id == playlist_id).first()
 
-def get_songs_not_in_playlist(db: Session, playlist_id: int) -> List[SongModel]:
-    """Retrieve songs not in a specific playlist."""
-    playlist = get_playlist(db, playlist_id)
-    if not playlist:
-        return []
+def get_search_songs_not_in_playlist(db: Session, playlist_id: int, search_field: str = "") -> List[SongModel]:
+    """Retrieve a maximum of 10 songs not in a specific playlist matching a search field."""
     
-    all_songs = db.query(SongModel).all()
-    return [song for song in all_songs if song not in playlist.songs]
+    # Create a query to fetch songs not in the specified playlist
+    query = db.query(SongModel).filter(~SongModel.playlists.any(id=playlist_id))
+
+    # If there's a search term, filter the query based on the search field
+    if search_field:
+        search = f"%{search_field.lower()}%"
+        query = query.filter(
+            (SongModel.title.ilike(search)) | 
+            (SongModel.artist.ilike(search))
+        )
+
+    # Limit the query to 10 results
+    return query.limit(MAX_NUM_SONGS_SEARCH).all()
+
 
 async def add_song_to_playlist(db: Session, playlist_id: int, song_id: int) -> Optional[SongModel]:
     """Add a song to a specific playlist and return the added song."""
