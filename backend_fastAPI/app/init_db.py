@@ -64,7 +64,7 @@ def seed_db_dataset_sqlite(db: Session, sqlite_db_path: str):
         cursor = sqlite_conn.cursor()
 
         # Query the acoustic_features table
-        cursor.execute("SELECT song, artist, album, date, duration_ms FROM acoustic_features")
+        cursor.execute("SELECT song, artist, album, date, duration_ms, tempo FROM acoustic_features")
         rows = cursor.fetchall()
 
         print("first row: ", rows[0])
@@ -75,15 +75,17 @@ def seed_db_dataset_sqlite(db: Session, sqlite_db_path: str):
             title = row[0] if row[0] is not None else 'Unknown Title'  # Handle missing titles
             artist = row[1] if row[1] is not None else 'Unknown Artist'  # Handle missing artists
             album = row[2] if row[2] is not None else 'Unknown Album'  # Handle missing albums
-            year = int(row[3].split('-')[0]) if row[3] else 0  # Extract year from release date
-            duration = (row[4] // 1000) if row[4] is not None else 0  # Handle missing duration
+            year = int(row[3].split('-')[0]) if row[3] else None  # Extract year from release date
+            duration = (row[4] // 1000) if row[4] is not None else None  # Handle missing duration
+            tempo = row[5] if row[5] is not None else None  # Handle missing tempo
 
             song = SongModel(
                 title=title,
                 artist=artist,
                 album=album,
                 year=year,
-                duration=duration
+                duration=duration,
+                tempo=tempo
             )
             songs.append(song)
 
