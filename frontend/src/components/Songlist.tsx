@@ -1,27 +1,18 @@
-import React, { useState } from "react";
 import { Song } from "../types";
 
 interface SongListProps {
-  playlistId: number; // Pass the playlist ID as a prop
-  songsNotInPlaylist: Song[];
-  onSongAdded: (songId: number) => void; // Callback for when a song is added
+  playlistId: number;
+  searchSongs: Song[];
+  onSongAdded: (songId: number) => void;
+  searchTerm: string;
+  setSearchTerm: (searchTerm: string) => void;
 }
 
-const numSongsToDisplay = 10;
-
-const SongListComponent: React.FC<SongListProps> = ({ songsNotInPlaylist, onSongAdded }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // Filter songs based on the search term
-  const filteredSongs = songsNotInPlaylist.filter((song) =>
-    song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    song.artist && song.artist.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+const SongListComponent: React.FC<SongListProps> = ({ searchSongs, onSongAdded, searchTerm, setSearchTerm }) => {
   return (
     <div className="song-list">
       <h2>Songs Available to Add</h2>
-      
+
       {/* Search Box */}
       <input
         type="text"
@@ -32,9 +23,8 @@ const SongListComponent: React.FC<SongListProps> = ({ songsNotInPlaylist, onSong
       />
 
       <ul>
-        {filteredSongs.length > 0 ? (
-          // Display only the first N songs
-          filteredSongs.slice(0, numSongsToDisplay).map((song) => ( 
+        {searchSongs && searchSongs.length > 0 ? (
+          searchSongs.map((song) => (
             <li key={song.id} className="song-item">
               <div className="song-details">
                 <span className="song-title">{song.title}</span> by <span className="song-artist">{song.artist}</span>
@@ -45,7 +35,7 @@ const SongListComponent: React.FC<SongListProps> = ({ songsNotInPlaylist, onSong
             </li>
           ))
         ) : (
-          <li>No songs available to add.</li>
+          <li>No songs found matching the search criteria.</li>
         )}
       </ul>
     </div>

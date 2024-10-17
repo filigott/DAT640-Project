@@ -1,9 +1,8 @@
-"""Init, only playlist and songs
+"""New init
 
-
-Revision ID: 2a564dd8e758
+Revision ID: 6e4cfe96641f
 Revises: 
-Create Date: 2024-10-14 22:49:07.745751
+Create Date: 2024-10-17 18:10:22.358406
 
 """
 from typing import Sequence, Union
@@ -13,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '2a564dd8e758'
+revision: str = '6e4cfe96641f'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
