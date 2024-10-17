@@ -10,13 +10,13 @@ import './App.css';
 
 const App: React.FC = () => {
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
-  const [songsNotInPlaylist, setSongsNotInPlaylist] = useState<Song[]>([]);
   const playlistId = 1; // Static playlist ID for now
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchSongs, setSearchSongs] = useState<Song[]>([]);
 
   useEffect(() => {
     // Note. Dev mode calls this code twice startup.
     fetchPlaylist();
-    fetchSongsNotInPlaylist();
     
     // Establish WebSocket connection on mount
     const ws = new WebSocket("ws://localhost:8000/ws/playlist")
@@ -29,11 +29,10 @@ const App: React.FC = () => {
       // Parse the message if it's JSON (optional)
       const updatedPlaylistId = JSON.parse(message).updated_playlist_id;
 
-      // Update the playlist if a new song is added or removed
       if (updatedPlaylistId === playlistId) {
+        // Do something??
         console.log("Updating playlist...");
         fetchPlaylist();
-        fetchSongsNotInPlaylist();
       }
     };
 
@@ -41,6 +40,14 @@ const App: React.FC = () => {
       ws.close();
     };
   }, []);
+
+  useEffect(() => {
+    if (searchTerm.length >= 3) {  // Fetch only if search term is at least 3 characters
+      searchForSongs(searchTerm);
+    } else {
+      setSearchSongs([]);  // Clear if search term is less than 3 characters
+    }
+  }, [searchTerm]);
 
   const fetchPlaylist = async () => {
     try {
@@ -51,21 +58,11 @@ const App: React.FC = () => {
     }
   };
 
-  const fetchSongsNotInPlaylist = async () => {
-    try {
-      const response = await axios.get<Song[]>(`/api/playlist/${playlistId}/songs_not_in`);
-      setSongsNotInPlaylist(response.data ?? []);
-    } catch (error) {
-      console.error("Error fetching songs not in playlist:", error);
-    }
-  };
-
   const handleAddSong = async (songId: number) => {
     try {
-      await axios.post(`/api/client/playlist/${playlistId}/add_song/${songId}`);
-      // After adding, we need to refresh both the playlist and songs not in playlist
-      fetchPlaylist();
-      fetchSongsNotInPlaylist();
+      const song = await axios.post(`/api/client/playlist/${playlistId}/add_song/${songId}`);
+      console.log("Added song: ", song)
+      fetchPlaylist()
     } catch (error) {
       console.error("Error adding song:", error);
     }
@@ -73,12 +70,23 @@ const App: React.FC = () => {
 
   const handleRemoveSong = async (songId: number) => {
     try {
-      await axios.post(`/api/client/playlist/${playlistId}/remove_song/${songId}`);
-      // After removing, we need to refresh both the playlist and songs not in playlist
-      fetchPlaylist();
-      fetchSongsNotInPlaylist();
+      const song = await axios.post(`/api/client/playlist/${playlistId}/remove_song/${songId}`);
+      console.log("Removed song: ", song)
+      fetchPlaylist()
     } catch (error) {
       console.error("Error removing song:", error);
+    }
+  };
+
+  const searchForSongs = async (searchField: string) => {
+    try {
+      // Assuming the backend provides an endpoint to search for songs not in the playlist
+      const response = await axios.get<Song[]>(`/api/playlist/${playlistId}/songs_not_in`, {
+        params: { search: searchField }
+      });
+      setSearchSongs(response.data);
+    } catch (error) {
+      console.error("Error searching for songs: ", error);
     }
   };
 
@@ -91,9 +99,11 @@ return (
             <PlaylistComponent playlist={playlist} onSongRemoved={handleRemoveSong} />
           
             <SongListComponent
-              songsNotInPlaylist={songsNotInPlaylist}
               playlistId={playlistId}
               onSongAdded={handleAddSong}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              searchSongs={searchSongs}
             />
         </>
       ) : (

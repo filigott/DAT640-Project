@@ -5,7 +5,7 @@ from typing import List
 from ..schemas import PlaylistSchema, SongSchema
 from ..websocket import websocket_push
 from ..database import get_db
-from ..repository import get_all_playlists, get_playlist, get_songs_not_in_playlist, add_song_to_playlist, remove_song_from_playlist, db_clear_playlist
+from ..repository import get_all_playlists, get_playlist, get_search_songs_not_in_playlist, add_song_to_playlist, remove_song_from_playlist, db_clear_playlist
 
 router = APIRouter()
 
@@ -26,11 +26,11 @@ def read_playlist(playlist_id: int, db: Session = Depends(get_db)):
     # Convert SQLAlchemy model to Pydantic schema
     return PlaylistSchema.from_orm(playlist)
 
-# Get all songs not in a specific playlist
+# Get all songs not in a specific playlist matching a searchfield
 @router.get("/playlist/{playlist_id}/songs_not_in", response_model=List[SongSchema])
-def read_songs_not_in_playlist(playlist_id: int, db: Session = Depends(get_db)):
-    songs = get_songs_not_in_playlist(db, playlist_id)
-    # Convert SQLAlchemy models to Pydantic schema
+def read_songs_not_in_playlist(playlist_id: int, search: str = "", db: Session = Depends(get_db)):
+    """Retrieve a maximum of 10 songs not in a specific playlist, optionally filtering by search term."""
+    songs = get_search_songs_not_in_playlist(db, playlist_id, search)
     return [SongSchema.from_orm(song) for song in songs]
 
 # Add a song to a specific playlist

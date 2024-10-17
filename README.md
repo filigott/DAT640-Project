@@ -8,6 +8,11 @@ A brief description of your project.
 - **Node.js** (for the frontend)
 - **Python 3.x** (for the backend)
 
+## Dataset
+
+- Download dataset from: <https://www.kaggle.com/datasets/snapcrack/the-billboard-200-acoustic-data>
+- Place unzipped sqlite database file into the data folder
+
 ## Installation
 
 1. **Clone the repository**:
