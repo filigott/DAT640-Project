@@ -3,6 +3,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from .models import PlaylistModel, SongModel
 from .schemas import PlaylistSchema, SongSchema
+from rapidfuzz import process
 
 
 def get_all_playlists(db: Session) -> List[PlaylistModel]:
@@ -81,3 +82,38 @@ def get_song_id_by_name(db: Session, song_description: dict) -> Optional[int]:
         return None
     song: SongModel = db.query(SongModel).filter(SongModel.title == song_name).first()
     return song.id if song else None
+
+def get_songs_by_name(db: Session, song_name: str) -> List[SongModel]:
+    """Get a list of songs based on the song title."""
+    if not song_name:
+        return []
+    songs = db.query(SongModel).filter(SongModel.title.ilike(f"%{song_name}%")).all()
+    print(songs)
+    return songs
+
+def get_songs_by_artist(db: Session, artist_name: str) -> List[SongModel]:
+    """Get a list of songs based on the artist name."""
+    if not artist_name:
+        return []
+  
+    songs = db.query(SongModel).filter(SongModel.artist.ilike(f"%{artist_name}%")).all()
+    if songs:
+        return songs
+    else:
+        all_artists = db.query(SongModel.artist).distinct().all()
+        artist_names = [artist[0] for artist in all_artists] 
+
+        best_match = process.extractOne(artist_name, artist_names, score_cutoff=75)
+        if best_match:
+            songs = db.query(SongModel).filter(SongModel.artist == best_match[0]).all()
+            return songs
+        return songs
+
+
+
+def get_songs_by_album(db: Session, album_name: str) -> List[SongModel]:
+    """Get a list of songs based on the album name."""
+    if not album_name:
+        return []
+    songs = db.query(SongModel).filter(SongModel.album.ilike(f"%{album_name}%")).all()
+    return songs
