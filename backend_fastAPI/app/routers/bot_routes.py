@@ -1,6 +1,8 @@
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
+from ..models import SongModel
 from ..database import get_db
 from ..repository import get_song_id_by_name, get_songs_by_album, get_songs_by_name, get_songs_by_artist
 from ..schemas import SongSchema
@@ -75,7 +77,7 @@ async def songs_of_artist(request: Request, db: Session = Depends(get_db)):
         songs = get_songs_by_artist(db, entity)
         if len(songs) == 0:
             continue
-        return {"message": f"The songs by {entity} are: {', '.join([song.title for song in songs])}", 
+        return {"message": f"The songs by {songs[0].artist} are: {', '.join([song.title for song in songs])}", 
                 "songs": [SongSchema.from_orm(song) for song in songs]}
         
     raise HTTPException(status_code=404, detail="Artist not found")
@@ -93,7 +95,7 @@ async def artist_of_song(request: Request, db: Session = Depends(get_db)):
         if len(songs) == 0:
             continue
         if len(songs) == 1:
-            return {"message": f"The artist of '{entity}' is {songs[0].artist}.", 
+            return {"message": f"The artist of '{songs[0].title}' is {songs[0].artist}.", 
                     "songs": SongSchema.from_orm(songs[0])}
         if len(songs) > 1:
             return {"message": f"Multiple artists have released a song with name: '{entity}'",
@@ -115,11 +117,11 @@ async def album_release_date(request: Request, db: Session = Depends(get_db)):
         if len(songs) == 0:
             continue
         if len(songs) == 1:
-            return {"message": f"The album '{entity}' was released in {songs[0].year}.", 
+            return {"message": f"The album '{songs[0].album}' was released in {songs[0].year}.", 
                     "songs": SongSchema.from_orm(songs[0])}
         if len(songs) > 1:
             ## Possible to return all songs in the album here if needed
-            return {"message": f"The album '{entity}' was released in {songs[0].year}."}
+            return {"message": f"The album '{songs[0].album}' was released in {songs[0].year}."}
         
     raise HTTPException(status_code=404, detail="Song not found")
 
@@ -131,15 +133,15 @@ async def album_of_song(request: Request, db: Session = Depends(get_db)):
     for entity in entity_values:
         entity = entity["value"] # song name
         print("entity: ", entity)
-        songs = get_songs_by_name(db, entity)
+        songs: List[SongModel] = get_songs_by_name(db, entity)
         if len(songs) == 0:
             continue
         if len(songs) == 1:
-            return {"message": f"The album of '{entity}' is '{songs[0].album}'.", 
+            return {"message": f"The album of '{songs[0].title}' is '{songs[0].album}'.", 
                     "songs": SongSchema.from_orm(songs[0])}
         
         if len(songs) > 1:
-            return {"message": f"Multiple albums contains the song with name: '{entity}'",
+            return {"message": f"Multiple albums contains the song with name: '{songs[0].title}'",
                     "second_message": f"{', '.join([song.album for song in songs])}"}
         
     raise HTTPException(status_code=404, detail="Song not found")
@@ -157,10 +159,10 @@ async def albums_of_artist(request: Request, db: Session = Depends(get_db)):
         if len(songs) == 0:
             continue
         if len(songs) == 1:
-            return {"message": f"The album by {entity} is: {songs[0].album}", 
+            return {"message": f"The album by {songs[0].artist} is: {songs[0].album}", 
                     "songs": SongSchema.from_orm(songs[0])}
         if len(songs) > 1:
-            return {"message": f"The albums by {entity} are: {', '.join(unique_albums)}", 
+            return {"message": f"The albums by {songs[0].artist} are: {', '.join(unique_albums)}", 
                     "songs": [SongSchema.from_orm(song) for song in songs]}
     
     raise HTTPException(status_code=404, detail="Artist not found")
