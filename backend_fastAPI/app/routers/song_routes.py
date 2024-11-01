@@ -4,7 +4,7 @@ from typing import List
 
 from ..schemas import SongSchema
 from ..database import get_db
-from ..repository import get_song_id_by_name, get_all_songs
+from ..repository import get_song_by_song_description, get_all_songs
 
 router = APIRouter()
 
@@ -20,7 +20,7 @@ def read_all_songs(db: Session = Depends(get_db)):
 @router.post("/songs/get_song_id", response_model=SongSchema)
 async def bot_get_song(request: Request, db: Session = Depends(get_db)):
     print(await request.json())
-    id = get_song_id_by_name(db, await request.json())
+    id = get_song_by_song_description(db, await request.json())
     # Broadcast the updated playlist to all connected WebSocket clients
     
     return {"song_id": id}

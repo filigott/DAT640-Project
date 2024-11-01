@@ -4,18 +4,60 @@ from sqlalchemy.orm import Session
 
 from ..models import SongModel
 from ..database import get_db
-from ..repository import get_song_id_by_name, get_songs_by_album, get_songs_by_name, get_songs_by_artist
+from ..repository import get_songs_by_album, get_songs_by_name, get_songs_by_artist, get_song_by_song_description
 from ..schemas import SongSchema
 from .playlist_routes import add_song as add_song_to_playlist
 from .playlist_routes import remove_song as remove_song_from_playlist
+import re
 
 router = APIRouter()
 
+
+def clean(input):
+    return re.sub(r'[^\x00-\x7F]+', '', input)
+
 # Bot add a song to a specific playlist
+@router.post("/bot/save_data_to_disk")
+async def save_data_to_disk(request: Request, db: Session = Depends(get_db)):
+    all_songs = db.query(SongModel.title).distinct().all()
+    all_artists = db.query(SongModel.artist).distinct().all()
+    all_albums = db.query(SongModel.album).distinct().all()
+    print(len(all_songs), len(all_artists), len(all_albums))
+
+    with open("all_songs.yml", "w", encoding="utf-8") as f:
+        # Write the version and NLU headers
+        f.write('version: "3.1"\n')
+        f.write('nlu:\n')
+        f.write('- lookup: song\n')
+        f.write('  examples: |\n')
+        
+        # Write each song title with indentation
+        for song in all_songs:
+            f.write(f"    - {song.title}\n")
+    
+    with open("all_artists.yml", "w", encoding="utf-8") as f:
+        f.write('version: "3.1"\n')
+        f.write('nlu:\n')
+        f.write('- lookup: artist\n')
+        f.write('  examples: |\n')
+        
+        for artist in all_artists:
+            f.write(f"    - {artist[0]}\n")
+    
+    with open("all_albums.yml", "w", encoding="utf-8") as f:
+        f.write('version: "3.1"\n')
+        f.write('nlu:\n')
+        f.write('- lookup: album\n')
+        f.write('  examples: |\n')
+        
+        for album in all_albums:
+            f.write(f"    - {album[0]}\n")
+
+
 @router.post("/bot/add_song", response_model=SongSchema)
 async def add_song(request: Request, db: Session = Depends(get_db)):
     song_description = await request.json()
-    id = get_song_id_by_name(db, song_description)
+    id = get_song_by_song_description(db, song_description)
     if not id:
         raise HTTPException(status_code=404, detail="Song not found")
     
@@ -28,7 +70,7 @@ async def add_song(request: Request, db: Session = Depends(get_db)):
 @router.post("/bot/remove_song", response_model=SongSchema)
 async def remove_song(request: Request, db: Session = Depends(get_db)):
     song_description = await request.json()
-    id = get_song_id_by_name(db, song_description)
+    id = get_song_by_song_description(db, song_description)
     if not id:
         raise HTTPException(status_code=404, detail="Song not found")
     
@@ -36,14 +78,6 @@ async def remove_song(request: Request, db: Session = Depends(get_db)):
 
     return song
 
-# intents = {
-#     "ask_song_release_date": f"{fast_api_endpoint}/bot/song_release_date",
-#     "ask_songs_of_artist": f"{fast_api_endpoint}/bot/songs_of_artist",
-#     "ask_artist_of_song": f"{fast_api_endpoint}/bot/artist_of_song",
-#     "ask_album_release_date": f"{fast_api_endpoint}/bot/album_release_date",
-#     "ask_album_of_song": f"{fast_api_endpoint}/bot/album_of_song",
-#     "ask_albums_of_artist": f"{fast_api_endpoint}/bot/albums_of_artist"
-# }
 
 @router.post("/bot/song_release_date")
 async def song_release_date(request: Request, db: Session = Depends(get_db)):
@@ -98,7 +132,7 @@ async def artist_of_song(request: Request, db: Session = Depends(get_db)):
             return {"message": f"The artist of '{songs[0].title}' is {songs[0].artist}.", 
                     "songs": SongSchema.from_orm(songs[0])}
         if len(songs) > 1:
-            return {"message": f"Multiple artists have released a song with name: '{entity}'",
+            return {"message": f"Need more information to identify the song",
                     "second_message": f"{', '.join([song.artist for song in songs])}"}
         
     raise HTTPException(status_code=404, detail="Song not found")
@@ -114,6 +148,7 @@ async def album_release_date(request: Request, db: Session = Depends(get_db)):
         entity = entity["value"] # album name
         print("entity: ", entity)
         songs = get_songs_by_album(db, entity)
+        print(songs)
         if len(songs) == 0:
             continue
         if len(songs) == 1:
@@ -121,7 +156,7 @@ async def album_release_date(request: Request, db: Session = Depends(get_db)):
                     "songs": SongSchema.from_orm(songs[0])}
         if len(songs) > 1:
             ## Possible to return all songs in the album here if needed
-            return {"message": f"The album '{songs[0].album}' was released in {songs[0].year}."}
+            return {"message": "Need more information to identify the album"}
         
     raise HTTPException(status_code=404, detail="Song not found")
 
@@ -141,7 +176,7 @@ async def album_of_song(request: Request, db: Session = Depends(get_db)):
                     "songs": SongSchema.from_orm(songs[0])}
         
         if len(songs) > 1:
-            return {"message": f"Multiple albums contains the song with name: '{songs[0].title}'",
+            return {"message": f"Need more information to indentify the song",
                     "second_message": f"{', '.join([song.album for song in songs])}"}
         
     raise HTTPException(status_code=404, detail="Song not found")

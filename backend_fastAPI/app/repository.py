@@ -85,11 +85,18 @@ def get_song_id(db: Session, song_description: dict) -> Optional[int]:
         print(f"Error fetching song ID: {e}")
         return None
 
-def get_song_id_by_name(db: Session, song_description: dict) -> Optional[int]:
+def get_song_by_song_description(db: Session, song_description: dict) -> Optional[int]:
     """Get a song ID based on the song title."""
     song_name = song_description["data"].get("title")
+    artist_name = song_description["data"].get("artist")
+    ##album_name = song_description["data"].get("album")
     if not song_name:
         return None
+    
+    if song_name and artist_name:
+        song = db.query(SongModel).filter(SongModel.title == song_name, SongModel.artist == artist_name).first()
+        return song.id if song else None
+
     song: SongModel = db.query(SongModel).filter(SongModel.title == song_name).first()
     return song.id if song else None
 
