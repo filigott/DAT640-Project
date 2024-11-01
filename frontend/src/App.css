@@ -12,16 +12,13 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2rem;
   padding: 20px;
-}
+  margin-inline: auto;
 
-#chatWidgetContainer {
-  margin: 20px auto;
-  max-width: 80%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  align-self: stretch;
+  max-width: 600px;
+  min-width: 300px;
 }
 
 h2 {
@@ -31,8 +28,9 @@ h2 {
 
 .playlist,
 .song-list {
-  width: 100%;
-  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
   margin-bottom: 20px;
   padding: 15px;
   border: 1px solid #ccc;
@@ -42,7 +40,8 @@ h2 {
 
 /* Search Box Styles */
 input[type="text"] {
-  width: 100%;
+  display: flex;
+  flex: 1 0 0;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;

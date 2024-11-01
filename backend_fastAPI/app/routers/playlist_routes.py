@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from ..schemas import PlaylistSchema, SongSchema
-from ..websocket import websocket_push
+from ..websocket import ws_push_playlist_update
 from ..database import get_db
 from ..repository import get_all_playlists, get_playlist, get_search_songs_not_in_playlist, add_song_to_playlist, remove_song_from_playlist, db_clear_playlist
 
@@ -41,7 +41,7 @@ async def add_song(playlist_id: int, song_id: int, db: Session = Depends(get_db)
     if not song:
         raise HTTPException(status_code=404, detail="Song not found or already in the playlist")
     # Notify via WebSocket
-    await websocket_push(playlist_id)
+    await ws_push_playlist_update(playlist_id)
     return SongSchema.from_orm(song)
 
 # Remove a song from a specific playlist
@@ -52,7 +52,7 @@ async def remove_song(playlist_id: int, song_id: int, db: Session = Depends(get_
     if not song:
         raise HTTPException(status_code=404, detail="Song not found in the playlist")
     # Notify via WebSocket
-    await websocket_push(playlist_id)
+    await ws_push_playlist_update(playlist_id)
     return SongSchema.from_orm(song)
 
 # Clear a playlist
@@ -62,5 +62,5 @@ async def clear_playlist(playlist_id: int, db: Session = Depends(get_db)):
     await db_clear_playlist(db, playlist_id)
     playlist = get_playlist(db, playlist_id)
     # Notify via WebSocket
-    await websocket_push(playlist_id)
+    await ws_push_playlist_update(playlist_id)
     return PlaylistSchema.from_orm(playlist)
