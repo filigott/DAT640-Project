@@ -64,7 +64,7 @@ class MusicAgent(Agent):
     def welcome(self) -> None:
         """Sends the agent's welcome message."""
         utterance = AnnotatedUtterance(
-            "Hello, I'm Parrot. What can I help u with?",
+            "Hello, im your music bot. How can I help you?",
             participant=DialogueParticipant.AGENT,
         )
         self._dialogue_connector.register_agent_utterance(utterance)
@@ -169,7 +169,7 @@ class MusicAgent(Agent):
             self._dialogue_connector.register_agent_utterance(utterance)
             return
         utterance = AnnotatedUtterance(
-            answer,
+            "Playlist cleared",
             participant=DialogueParticipant.AGENT,
         )
 
@@ -246,26 +246,6 @@ class MusicAgent(Agent):
         
         # Hardcoded commands
         if utternace_text_split[0] == "/add":
-            #[artist]: [title]
-            # if ":" in utternace_text_split:
-            #     artist_start_index = 1
-            #     artist_end_index = utternace_text_split.index(":")
-            #     song_title_start_index = artist_end_index + 1
-            #     artist = " ".join(utternace_text_split[artist_start_index:artist_end_index])
-            #     song_title = " ".join(utternace_text_split[song_title_start_index:])
-            #     self.add(title = song_title, artist = artist)
-            # # [title] by [artist]
-            # if "by" in utternace_text_split:
-            #     artist_start_index = utternace_text_split.index("by") + 1
-            #     artist = " ".join(utternace_text_split[artist_start_index:])
-            #     song_title = " ".join(utternace_text_split[1:artist_start_index-1])
-            #     self.add(title = song_title, artist = artist)
-            # # [title]
-            
-            # else:
-            #     song_title = " ".join(utternace_text_split[1:])
-            #     self.add(title = song_title)
-
             artist, song_title = parse_add_song_input(utterance.text)
             # Either [artist]: [title]" or "[title] by [artist]", else just "[title]"
             if artist and song_title:

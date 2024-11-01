@@ -60,6 +60,9 @@ uvicorn app.main:app --reload
 
 # Start the Vite frontend
 npm run dev
+
+# Start rasa agent from rasa directory
+rasa run --enable-api -m models/nlu-20241017-225924-brilliant-formant.tar.gz
 ```
 
 ## Access the Application
@@ -68,6 +71,8 @@ npm run dev
 - **Vite React**: `http://localhost:8001`
 - **PostgreSQL**: `localhost:5432` (use `postgres`/`postgres` for user/password)
 - **Adminer**: `http://localhost:8080`
+- **Rasa**: `http://localhost:5005`
+
 
 ## Stopping the Application
 

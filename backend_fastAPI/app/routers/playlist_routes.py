@@ -60,7 +60,7 @@ async def remove_song(playlist_id: int, song_id: int, db: Session = Depends(get_
 async def clear_playlist(playlist_id: int, db: Session = Depends(get_db)):
     # Clear all songs from the playlist
     await db_clear_playlist(db, playlist_id)
-    playlist = await get_playlist(db, playlist_id)
+    playlist = get_playlist(db, playlist_id)
     # Notify via WebSocket
     await websocket_push(playlist_id)
     return PlaylistSchema.from_orm(playlist)
