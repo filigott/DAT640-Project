@@ -4,14 +4,15 @@ from sqlalchemy.orm import Session
 
 from ..models import SongModel
 from ..database import get_db
-from ..repository import get_songs_by_album, get_songs_by_name, get_songs_by_artist, get_song_by_song_description
 from ..schemas import SongSchema
 from .playlist_routes import add_song as add_song_to_playlist
 from .playlist_routes import remove_song as remove_song_from_playlist
 import re
+import repository as r
 
 router = APIRouter()
 
+# TODO: Not used. Logic moved to chat_agent_service
 
 def clean(input):
     return re.sub(r'[^\x00-\x7F]+', '', input)
@@ -57,7 +58,7 @@ async def save_data_to_disk(request: Request, db: Session = Depends(get_db)):
 @router.post("/bot/add_song", response_model=SongSchema)
 async def add_song(request: Request, db: Session = Depends(get_db)):
     song_description = await request.json()
-    id = get_song_by_song_description(db, song_description)
+    id = r.get_song_by_song_description(db, song_description)
     if not id:
         raise HTTPException(status_code=404, detail="Song not found")
     
@@ -70,7 +71,7 @@ async def add_song(request: Request, db: Session = Depends(get_db)):
 @router.post("/bot/remove_song", response_model=SongSchema)
 async def remove_song(request: Request, db: Session = Depends(get_db)):
     song_description = await request.json()
-    id = get_song_by_song_description(db, song_description)
+    id = r.get_song_by_song_description(db, song_description)
     if not id:
         raise HTTPException(status_code=404, detail="Song not found")
     
@@ -87,7 +88,7 @@ async def song_release_date(request: Request, db: Session = Depends(get_db)):
     for entity in entity_values:
         entity = entity["value"] # song name
         print("entity: ", entity)
-        songs = get_songs_by_name(db, entity)
+        songs = r.get_songs_by_name(db, entity)
         if len(songs) == 0:
             continue
         
@@ -108,7 +109,7 @@ async def songs_of_artist(request: Request, db: Session = Depends(get_db)):
     for entity_val in entity_values: 
         entity = entity_val["value"] # artist name
         print("entity: ", entity)
-        songs = get_songs_by_artist(db, entity)
+        songs = r.get_songs_by_artist(db, entity)
         if len(songs) == 0:
             continue
         return {"message": f"The songs by {songs[0].artist} are: {', '.join([song.title for song in songs])}", 
@@ -125,7 +126,7 @@ async def artist_of_song(request: Request, db: Session = Depends(get_db)):
     for entity in entity_values:
         entity = entity["value"] # song name
         print("entity: ", entity)
-        songs = get_songs_by_name(db, entity)
+        songs = r.get_songs_by_name(db, entity)
         if len(songs) == 0:
             continue
         if len(songs) == 1:
@@ -147,7 +148,7 @@ async def album_release_date(request: Request, db: Session = Depends(get_db)):
     for entity in entity_values:
         entity = entity["value"] # album name
         print("entity: ", entity)
-        songs = get_songs_by_album(db, entity)
+        songs = r.get_songs_by_album(db, entity)
         print(songs)
         if len(songs) == 0:
             continue
@@ -168,7 +169,7 @@ async def album_of_song(request: Request, db: Session = Depends(get_db)):
     for entity in entity_values:
         entity = entity["value"] # song name
         print("entity: ", entity)
-        songs: List[SongModel] = get_songs_by_name(db, entity)
+        songs: List[SongModel] = r.get_songs_by_name(db, entity)
         if len(songs) == 0:
             continue
         if len(songs) == 1:
@@ -189,7 +190,7 @@ async def albums_of_artist(request: Request, db: Session = Depends(get_db)):
     for entity_val in entity_values: 
         entity = entity_val["value"] # artist name
         print("entity: ", entity)
-        songs = get_songs_by_artist(db, entity)
+        songs = r.get_songs_by_artist(db, entity)
         unique_albums = set([song.album for song in songs])
         if len(songs) == 0:
             continue

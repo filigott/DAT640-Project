@@ -1,11 +1,16 @@
+import os
 from typing import Optional, List
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
-from .models import PlaylistModel, SongModel
-from .schemas import PlaylistSchema, SongSchema
+
+from app.init_db import seed_db_demo
+from ..models import PlaylistModel, SongModel
 from rapidfuzz import process
 
 MAX_NUM_SONGS_SEARCH = 10
+
+def demo_seed_database(db: Session):
+    seed_db_demo(db)
 
 def get_all_playlists(db: Session) -> List[PlaylistModel]:
     """Retrieve all playlists from the database as raw models."""
@@ -36,8 +41,7 @@ def get_search_songs_not_in_playlist(db: Session, playlist_id: int, search_field
     # Limit the query to 10 results
     return query.limit(MAX_NUM_SONGS_SEARCH).all()
 
-
-async def add_song_to_playlist(db: Session, playlist_id: int, song_id: int) -> Optional[SongModel]:
+async def add_song_to_playlist_async(db: Session, playlist_id: int, song_id: int) -> Optional[SongModel]:
     """Add a song to a specific playlist and return the added song."""
     playlist = get_playlist(db, playlist_id)
     song = db.query(SongModel).filter(SongModel.id == song_id).first()
@@ -48,7 +52,18 @@ async def add_song_to_playlist(db: Session, playlist_id: int, song_id: int) -> O
         return song
     return None
 
-async def remove_song_from_playlist(db: Session, playlist_id: int, song_id: int) -> Optional[SongModel]:
+def add_song_to_playlist(db: Session, playlist_id: int, song_id: int) -> Optional[SongModel]:
+    """Add a song to a specific playlist and return the added song."""
+    playlist = get_playlist(db, playlist_id)
+    song = db.query(SongModel).filter(SongModel.id == song_id).first()
+    
+    if playlist and song and song not in playlist.songs:
+        playlist.songs.append(song)
+        db.commit()
+        return song
+    return None
+
+async def remove_song_from_playlist_async(db: Session, playlist_id: int, song_id: int) -> Optional[SongModel]:
     """Remove a song from a specific playlist and return the removed song."""
     playlist = get_playlist(db, playlist_id)
     song = db.query(SongModel).filter(SongModel.id == song_id).first()
@@ -59,7 +74,18 @@ async def remove_song_from_playlist(db: Session, playlist_id: int, song_id: int)
         return song
     return None
 
-async def db_clear_playlist(db: Session, playlist_id: int):
+def remove_song_from_playlist(db: Session, playlist_id: int, song_id: int) -> Optional[SongModel]:
+    """Remove a song from a specific playlist and return the removed song."""
+    playlist = get_playlist(db, playlist_id)
+    song = db.query(SongModel).filter(SongModel.id == song_id).first()
+
+    if playlist and song and song in playlist.songs:
+        playlist.songs.remove(song)
+        db.commit()
+        return song
+    return None
+
+def clear_playlist(db: Session, playlist_id: int):
     """Clear all songs from a specific playlist."""
     playlist = get_playlist(db, playlist_id)
     if playlist:
@@ -87,8 +113,8 @@ def get_song_id(db: Session, song_description: dict) -> Optional[int]:
 
 def get_song_by_song_description(db: Session, song_description: dict) -> Optional[int]:
     """Get a song ID based on the song title."""
-    song_name = song_description["data"].get("title")
-    artist_name = song_description["data"].get("artist")
+    song_name = song_description.get("title")
+    artist_name = song_description.get("artist")
     ##album_name = song_description["data"].get("album")
     if not song_name:
         return None
@@ -125,7 +151,6 @@ def get_songs_by_artist(db: Session, artist_name: str) -> List[SongModel]:
             songs = db.query(SongModel).filter(SongModel.artist == best_match[0]).all()
             return songs
         return songs
-
 
 
 def get_songs_by_album(db: Session, album_name: str) -> List[SongModel]:

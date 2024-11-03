@@ -22,19 +22,30 @@ class PlaylistWSConnectionManager:
 # Chat connection manager with user-specific connections
 class ChatWSConnectionManager:
     def __init__(self):
-        self.connections: Dict[str, WebSocket] = {}  # Maps user ID to WebSocket connection
+        self.active_connections: Dict[str, Dict] = {} # Maps userId to WS and other custom fields such as welcome_sent
 
     async def connect(self, user_id: str, websocket: WebSocket):
         await websocket.accept()
-        self.connections[user_id] = websocket
+        if user_id not in self.active_connections:
+            self.active_connections[user_id] = {"websocket": websocket, "welcome_sent": False}
+        else:
+            self.active_connections[user_id]["websocket"] = websocket
 
-    def disconnect(self, user_id: str):
-        if user_id in self.connections:
-            del self.connections[user_id]
+    async def disconnect(self, user_id: str):
+        await self.active_connections[user_id]["websocket"].close()
+        self.active_connections.pop(user_id, None)
 
-    async def send_message(self, user_id: str, message: str):
-        if user_id in self.connections:
-            await self.connections[user_id].send_text(message)
+    async def send_message(self, user_id: str, message: json):
+        if user_id in self.active_connections:
+            websocket = self.active_connections[user_id]["websocket"]
+            await websocket.send_text(message)
+
+    def has_sent_welcome(self, user_id: str) -> bool:
+        return self.active_connections.get(user_id, {}).get("welcome_sent", False)
+            
+    def set_welcome_sent(self, user_id: str):
+        if user_id in self.active_connections:
+            self.active_connections[user_id]["welcome_sent"] = True
 
 
 ws_manager_playlist = PlaylistWSConnectionManager()
@@ -44,11 +55,6 @@ ws_manager_chat = ChatWSConnectionManager()
 async def ws_push_playlist_update(playlist_id: int = 1):
     message = {"updated_playlist_id": playlist_id}
     await ws_manager_playlist.broadcast(json.dumps(message))
-
-# For sending message through custom chat widget
-async def ws_chat_message(chat_message: str, user_id: int = 1):
-    message = {"message": chat_message}
-    await ws_manager_chat.send_message(user_id, json.dumps(message))
 
 def get_ws_manager_playlist() -> PlaylistWSConnectionManager:
     return ws_manager_playlist

@@ -44,6 +44,7 @@ const useWebSocket = (userId: string) => {
     ws_chat.current.onclose = () => {
       console.log("CustomChatWidget disconnected from WebSocket server");
       setDisconnected(true); // Set to true when disconnected
+      setLoading(false);
     };
   }, [userId]);
 
@@ -67,7 +68,7 @@ const CustomChatWidget: React.FC = () => {
   const { messages, setMessages, loading, setLoading, disconnected, establishConnection, hasConnected, ws_chat } = useWebSocket(userId);
 
   const handleSendMessage = useCallback(() => {
-    if (input.trim() !== "" && ws_chat.current) {
+    if (input.trim() !== "" && ws_chat.current && !disconnected) {
       setMessages((prevMessages) => [...prevMessages, { sender: "user", text: input }]);
       ws_chat.current.send(JSON.stringify({ message: input }));
       setInput("");
@@ -111,7 +112,7 @@ const CustomChatWidget: React.FC = () => {
           onKeyDown={handleKeyDown}
           placeholder="Type your message..."
         />
-        <button onClick={handleSendMessage}>Send</button>
+        <button disabled={disconnected} onClick={handleSendMessage}>Send</button>
       </div>
     </div>
   );
