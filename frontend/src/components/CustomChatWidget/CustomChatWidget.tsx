@@ -1,56 +1,87 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import "./CustomChatWidget.css";
 
-const CustomChatWidget: React.FC = () => {
-  const [messages, setMessages] = useState<{ sender: string; text: string }[]>([]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
+// Custom hook to manage WebSocket connection
+const useWebSocket = (userId: string) => {
   const ws_chat = useRef<WebSocket | null>(null);
+  const [messages, setMessages] = useState<{ sender: string; text: string }[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [disconnected, setDisconnected] = useState(false);
+  const [hasConnected, setHasConnected] = useState(false);
 
-  const userId = "user-123"
+  const establishConnection = useCallback(() => {
+    if (ws_chat.current) {
+      ws_chat.current.close(); // Close any existing connection
+    }
 
-  useEffect(() => {
-    // Establish WebSocket connection on mount
-    ws_chat.current = new WebSocket("ws://localhost:8000/ws/chat/" + userId);
-    
+    ws_chat.current = new WebSocket(`ws://localhost:8000/ws/chat/${userId}`);
+
+    ws_chat.current.onopen = () => {
+      console.log("CustomChatWidget connected to WebSocket server");
+      setDisconnected(false);
+      setHasConnected(true)
+    };
+
     ws_chat.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      // Add the server's response message
-       setMessages((prevMessages) => [
+      console.log(data);
+
+      // Display the bot's message
+      setMessages((prevMessages) => [
         ...prevMessages,
-        { sender: "bot", text: data.message }
+        { sender: "bot", text: data.message },
       ]);
 
-      // Stop loading animation when a response is received
+      // Check if the server sent an exit message
+      if (data.action === "exit") {
+        // Send acknowledgment for exit
+        ws_chat.current?.send(JSON.stringify({ message: "exit-ack" }));
+      }
+
       setLoading(false);
     };
 
-    ws_chat.current.onopen = () => console.log("CustomChatWidget connected to WS server");
-    ws_chat.current.onclose = () => console.log("CustomChatWidget disconnected from WebSocket server");
-
-    // Cleanup the WebSocket connection on component unmount
-    return () => {
-      ws_chat.current?.close();
+    ws_chat.current.onclose = () => {
+      console.log("CustomChatWidget disconnected from WebSocket server");
+      setDisconnected(true); // Set to true when disconnected
     };
-  }, []);
+  }, [userId]);
 
-  const handleSendMessage = () => {
-    if (ws_chat.current && input.trim() !== "") {
+  useEffect(() => {
+    establishConnection();
+
+    return () => {
+      if (ws_chat.current) {
+        ws_chat.current.close();
+      }
+    };
+  }, [establishConnection]);
+
+  return { messages, setMessages, loading, setLoading, disconnected, establishConnection, hasConnected, ws_chat };
+};
+
+const CustomChatWidget: React.FC = () => {
+  const [input, setInput] = useState("");
+  const userId = "user-123";
+
+  const { messages, setMessages, loading, setLoading, disconnected, establishConnection, hasConnected, ws_chat } = useWebSocket(userId);
+
+  const handleSendMessage = useCallback(() => {
+    if (input.trim() !== "" && ws_chat.current) {
       setMessages((prevMessages) => [...prevMessages, { sender: "user", text: input }]);
-
       ws_chat.current.send(JSON.stringify({ message: input }));
       setInput("");
-      setLoading(true); // Show loading animation while waiting for a response
+      setLoading(true);
     }
-  };
+  }, [input, setMessages, ws_chat]);
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       handleSendMessage();
     }
-  };
+  }, [handleSendMessage]);
 
-return (
+  return (
     <div className="chatbot-container">
       <div className="chatbot-banner">
         <h2>Music Recommendation Chat Widget</h2>
@@ -63,6 +94,15 @@ return (
         ))}
         {loading && <div className="loading">Typing...</div>}
       </div>
+      {/* Only show the disconnected message if has connected */}
+      {hasConnected && disconnected && (
+        <div className="message system">
+          <span>The chat connection has been closed.</span>
+          <button onClick={establishConnection} className="reconnect-button">
+            Reconnect
+          </button>
+        </div>
+      )}
       <div className="chatbot-input">
         <input
           type="text"
