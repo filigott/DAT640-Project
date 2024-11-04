@@ -1,15 +1,26 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+import json
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from requests import Session
 
-from ..websocket import get_ws_manager
+from app.chat_mediator import ChatWSMediator
+from ..database import get_db
+from ..websocket import ws_manager_playlist
+
 
 router = APIRouter()
 
+# Playlist WebSocket endpoint
 @router.websocket("/ws/playlist")
-async def websocket_endpoint(websocket: WebSocket):
-    ws_manager = get_ws_manager()
-    await ws_manager.connect(websocket)
+async def playlist_websocket_endpoint(websocket: WebSocket):
+    await ws_manager_playlist.connect(websocket)
     try:
         while True:
-            _ = await websocket.receive_text()  # Keep connection alive
+            await websocket.receive_text()  # Keep the connection alive
     except WebSocketDisconnect:
-        ws_manager.disconnect(websocket)
+        ws_manager_playlist.disconnect(websocket)
+
+
+@router.websocket("/ws/chat/{user_id}")
+async def chat_websocket_endpoint(user_id: str, websocket: WebSocket, db: Session = Depends(get_db)):
+    chat_handler = ChatWSMediator(user_id, websocket, db)
+    await chat_handler.handle_connection()

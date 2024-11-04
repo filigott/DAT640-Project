@@ -1,9 +1,8 @@
+from typing import List
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, Float
 from sqlalchemy.orm import relationship
-from .database import DB_Base
 
-from sqlalchemy import Column, Integer, String, ForeignKey, Table
-from sqlalchemy.orm import relationship
+from .schemas import PlaylistSchema, SongSchema
 from .database import DB_Base
 
 # Many-to-Many Association Table for songs and playlists
@@ -27,6 +26,15 @@ class SongModel(DB_Base):
 
     playlists = relationship('PlaylistModel', secondary=PlaylistSongsTable, back_populates='songs')
 
+    def to_dto(self):
+        """Map the SongModel instance to SongSchema for JSON serialization."""
+        return SongSchema.from_orm(self)
+    
+    @classmethod
+    def list_to_dto(cls, song_models) -> List[SongSchema]:
+        """Map a list of SongModel instances to a list of SongSchema instances."""
+        return [song.to_dto() for song in song_models]
+
 class PlaylistModel(DB_Base):
     __tablename__ = 'playlists'
     
@@ -34,3 +42,7 @@ class PlaylistModel(DB_Base):
     title = Column(String, index=True)
 
     songs = relationship('SongModel', secondary=PlaylistSongsTable, back_populates='playlists')
+
+    def to_dto(self):
+        """Map the PlaylistModel instance to PlaylistSchema for JSON serialization."""
+        return PlaylistSchema.from_orm(self)

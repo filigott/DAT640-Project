@@ -4,8 +4,8 @@ import axios from "axios";
 import PlaylistComponent from "./components/Playlist";
 import SongListComponent from "./components/Songlist";
 import { Playlist, Song } from "./types";
-import ChatWidget from "./components/ChatWidget";
 import './App.css'; 
+import CustomChatWidget from "./components/CustomChatWidget/CustomChatWidget";
 
 
 const App: React.FC = () => {
@@ -19,9 +19,9 @@ const App: React.FC = () => {
     fetchPlaylist();
     
     // Establish WebSocket connection on mount
-    const ws = new WebSocket("ws://localhost:8000/ws/playlist")
+    const ws_playlist = new WebSocket("ws://localhost:8000/ws/playlist")
 
-    ws.onmessage = (event) => {
+    ws_playlist.onmessage = (event) => {
       // Handle incoming messages (e.g., playlist updates)
       const message = event.data;
       console.log("Received from server:", message);
@@ -37,7 +37,7 @@ const App: React.FC = () => {
     };
 
     return () => {
-      ws.close();
+      ws_playlist?.close();
     };
   }, []);
 
@@ -92,7 +92,7 @@ const App: React.FC = () => {
 
 return (
     <div className="App">
-      <ChatWidget />
+      <CustomChatWidget />
 
       {playlist ? (
         <>
