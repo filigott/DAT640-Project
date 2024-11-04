@@ -2,7 +2,7 @@ import json
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from requests import Session
 
-from backend_fastAPI.app.chat_mediator import ChatWSMediator
+from app.chat_mediator import ChatWSMediator
 from ..database import get_db
 from ..websocket import ws_manager_playlist
 

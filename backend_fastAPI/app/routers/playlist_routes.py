@@ -5,7 +5,7 @@ from typing import List
 from ..schemas import PlaylistSchema, SongSchema
 from ..websocket import ws_push_playlist_update
 from ..database import get_db
-import repository as r
+import app.repository as r
 
 router = APIRouter()
 

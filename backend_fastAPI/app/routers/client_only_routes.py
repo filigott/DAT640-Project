@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..schemas import SongSchema
-import repository as r
+import app.repository as r
 
 router = APIRouter()
 

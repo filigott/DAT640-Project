@@ -8,7 +8,7 @@ from ..schemas import SongSchema
 from .playlist_routes import add_song as add_song_to_playlist
 from .playlist_routes import remove_song as remove_song_from_playlist
 import re
-import repository as r
+import app.repository as r
 
 router = APIRouter()
 
