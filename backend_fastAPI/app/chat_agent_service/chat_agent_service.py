@@ -94,10 +94,22 @@ class ChatAgentService:
         for entity in entity_values:
             entity_value = entity["value"]
             song_models = r.get_songs_by_name(self.db, entity_value)
-            response = self._get_songs_response(song_models, "song")
-            if response:
-                return response
+            songs = [song_model.to_dto() for song_model in song_models]
+            if len(songs) == 0:
+                continue
+            
+            if len(songs) == 1:
+                return {"message": f"'{songs[0].title}' by {songs[0].artist} was released in {songs[0].year}.", 
+                        "song": songs[0]}
+            
+            if len(songs) > 1: 
+                return {"message": "Need more information to identify the song.",
+                        "songs": songs}
+
         return None  # Indicate that no match was found
+    
+
+        
 
     def get_songs_by_artist(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
         for entity_val in entity_values:

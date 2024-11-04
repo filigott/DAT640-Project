@@ -11,6 +11,7 @@ class ChatAgent:
         self.service = ChatAgentService(db_session)
         # Map intents to ChatAgentService functions
         self.intent_function_map = {
+
             Intents.ask_song_release_date: self.service.get_song_release_date,
             Intents.ask_songs_of_artist: self.service.get_songs_by_artist,
             Intents.ask_artist_of_song: self.service.get_artist_of_song,
@@ -69,33 +70,43 @@ class ChatAgent:
             case _:
                 print("Sending message over to rasa...")
                 # Pass message to Rasa if it isn't a hardcoded command
-                # return self.handle_rasa_response(message)
+                return self.handle_rasa_response(message)
 
 
     def handle_rasa_response(self, message: str) -> str:
         """Sends the message to Rasa for intent and entity extraction."""
+        print(message)
         rasa_resp = requests.post(RASA_URL, json={"text": message}).json()
+        print(rasa_resp)
         intent_name = rasa_resp.get("intent", {}).get("name")
         confidence = rasa_resp.get("intent", {}).get("confidence")
         entities = rasa_resp.get("entities")
 
         # Convert the intent name to the Intent Enum if it exists
         intent = Intents.__members__.get(intent_name)
+        print("intent: ", intent)
+        test =  Intents.ask_song_release_date
+        print("TETETSTSTWTW")
+        print(test)
+
+        print(self.intent_function_map)
 
         # Ensure high confidence and valid entity
         if confidence > 0.9 and entities:
-            expected_entity_type = self.intent_function_map.get(intent)
-            if expected_entity_type and expected_entity_type.value in [entity.get("entity") for entity in entities]:
-                return self.query_backend(intent_name, entities)
-            else:
-                return "I couldn't understand your question. Could you provide more details?"
+            # # expected_entity_type = self.intent_function_map.get(intent)
+            # if expected_entity_type and expected_entity_type.value in [entity.get("entity") for entity in entities]:
+            return self.query_backend(intent, entities)
+            # else:
+                # return "I couldn't understand your question. Could you provide more details?"
         else:
             return "I'm sorry, I didn't understand that."
 
 
-    def query_backend(self, intent: str, entities: list) -> str:
+    def query_backend(self, intent: Intents, entities: list) -> str:
         """Maps intent to the respective bot service function and calls it."""
         service_function = self.intent_function_map.get(intent)
+        print(service_function)
+        # service_function = self.service.get_song_release_date
         if service_function:
             result = service_function(entities)
             if result:

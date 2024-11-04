@@ -20,12 +20,12 @@ class IntentType(Enum):
     ALBUM = "album"
 
 class Intents(Enum):
-    ask_song_release_date = IntentType.SONG
-    ask_songs_of_artist = IntentType.ARTIST
-    ask_artist_of_song = IntentType.SONG
-    ask_album_release_date = IntentType.ALBUM
-    ask_album_of_song = IntentType.SONG
-    ask_albums_of_artist = IntentType.ARTIST
+    ask_song_release_date = 1
+    ask_songs_of_artist = 2
+    ask_artist_of_song = 3
+    ask_album_release_date = 4
+    ask_album_of_song = 5
+    ask_albums_of_artist = 6
 
 class Commands(Enum):
     hello = "/hello"
