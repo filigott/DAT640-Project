@@ -63,24 +63,49 @@ const useWebSocket = (userId: string) => {
 
 const CustomChatWidget: React.FC = () => {
   const [input, setInput] = useState("");
+  const [messageHistory, setMessageHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1); // Track position in message history
+  
   const userId = "user-123";
-
   const { messages, setMessages, loading, setLoading, disconnected, establishConnection, hasConnected, ws_chat } = useWebSocket(userId);
 
   const handleSendMessage = useCallback(() => {
     if (input.trim() !== "" && ws_chat.current && !disconnected) {
       setMessages((prevMessages) => [...prevMessages, { sender: "user", text: input }]);
       ws_chat.current.send(JSON.stringify({ message: input }));
+
+      // Update message history
+      setMessageHistory(prevHistory => [...prevHistory, input]);
+      setHistoryIndex(-1); // Reset history index after sending a message
+
       setInput("");
       setLoading(true);
     }
-  }, [input, setMessages, ws_chat]);
+  }, [input, setMessages, ws_chat, disconnected]);
 
   const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       handleSendMessage();
+    } else if (event.key === "ArrowUp") {
+      // Navigate up in history
+      if (historyIndex < messageHistory.length - 1) {
+        const newIndex = historyIndex + 1;
+        setHistoryIndex(newIndex);
+        setInput(messageHistory[messageHistory.length - 1 - newIndex]);
+      }
+    } else if (event.key === "ArrowDown") {
+      // Navigate down in history
+      if (historyIndex > 0) {
+        const newIndex = historyIndex - 1;
+        setHistoryIndex(newIndex);
+        setInput(messageHistory[messageHistory.length - 1 - newIndex]);
+        
+      } else if (historyIndex === 0) {
+        setHistoryIndex(-1);
+        setInput("");
+      }
     }
-  }, [handleSendMessage]);
+  }, [handleSendMessage, historyIndex, messageHistory]);
 
   return (
     <div className="chatbot-container">

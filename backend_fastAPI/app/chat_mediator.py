@@ -14,8 +14,9 @@ class ChatWSMediator:
     async def handle_connection(self):
         await ws_manager_chat.connect(self.user_id, self.websocket)
         if not ws_manager_chat.has_sent_welcome(self.user_id):
-            await self.send_welcome_message()
+            self.chat_agent.welcome()
             ws_manager_chat.set_welcome_sent(self.user_id)
+            await self.send_response_queue() # Send welcome message directly
 
         try:
             while True:
@@ -30,30 +31,30 @@ class ChatWSMediator:
 
         print("Handle message: ", user_message)
 
-        # Store the result of processing the message
-        processed_response = await self.chat_agent.process_message(user_message)
-
-        print("Chat agent response:", processed_response)
-
-        # Check if the processed response indicates an exit command
-        if processed_response == "exit":
-            await self.send_exit_message()
-            self.awaiting_ack = True
-            return
-
         # Finish disconnect after client acks
         if self.awaiting_ack and user_message == "exit-ack":
             print("Goodbye acknowledged by client.")
             await ws_manager_chat.disconnect(self.user_id)
             return
-            
-        await ws_manager_chat.send_message(self.user_id, json.dumps({"action": "message", "message": processed_response}))
+
+        # Process the message with the chat agent
+        await self.chat_agent.process_message(user_message)
+
+        # Send all messages currently in the response queue
+        await self.send_response_queue()
 
 
-    async def send_welcome_message(self):
-        welcome_message = self.chat_agent.welcome()
-        await ws_manager_chat.send_message(self.user_id, json.dumps({"action": "welcome", "message": welcome_message}))
+    async def send_response_queue(self):
+        """Send all messages in the response queue."""
+        while self.chat_agent.response_queue:
+            next_response = self.chat_agent.response_queue.popleft()  # Dequeue each response message
 
-    async def send_exit_message(self):
-        goodbye_message = self.chat_agent.goodbye()
-        await ws_manager_chat.send_message(self.user_id, json.dumps({"action": "exit", "message": goodbye_message}))
+            print("Next response sending to chat:", next_response)
+
+            # Check if the next response indicates an exit command
+            if next_response.get("action") == "exit":
+                self.awaiting_ack = True
+      
+            await ws_manager_chat.send_message(
+                self.user_id, json.dumps(next_response)
+            )

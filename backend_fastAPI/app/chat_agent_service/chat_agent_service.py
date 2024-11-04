@@ -108,9 +108,6 @@ class ChatAgentService:
 
         return None  # Indicate that no match was found
     
-
-        
-
     def get_songs_by_artist(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
         for entity_val in entity_values:
             artist_name = entity_val["value"]
