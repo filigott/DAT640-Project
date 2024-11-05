@@ -178,6 +178,68 @@ nlu:
     - list all the albums recorded by [bruce springsteen](artist).
     - do you know the albums from [frank sinatra](artist)?
 
+- intent: add_song_to_playlist
+  examples: |
+    - Add [Shape of You](song) to my playlist.
+    - Could you add [Bohemian Rhapsody](song) to the playlist?
+    - Put [Imagine](song) into my playlist.
+    - I want to add [Thriller](song) to my playlist.
+    - Can you include [Bad Guy](song) in my playlist?
+    - Add [Shape of You](song) by [Ed Sheeran](artist) to my playlist.
+    - Please add [Bohemian Rhapsody](song) by [Queen](artist) to the playlist.
+    - Include [Thriller](song) by [Michael Jackson](artist).
+    - Put [Wonderwall](song) by [Oasis](artist) in my playlist.
+    - Add [Uptown Funk](song) by [Mark Ronson](artist).
+    - Add [Shape of You](song).
+    - Include [Bohemian Rhapsody](song).
+    - Put [Imagine](song).
+    - Add [Thriller](song) by [Michael Jackson](artist).
+    - Include [Bad Guy](song) by [Billie Eilish](artist).
+
+- intent: remove_song_from_playlist
+  examples: |
+    - Remove [Shape of You](song) from my playlist.
+    - Could you delete [Bohemian Rhapsody](song) from the playlist?
+    - Take [Imagine](song) out of my playlist.
+    - I want to remove [Thriller](song) from my playlist.
+    - Can you take [Bad Guy](song) off my playlist?
+    - Remove the song [Hey Jude](song) from my playlist.
+    - Please delete [Smells Like Teen Spirit](song) from the playlist.
+    - Remove [Sweet Child O' Mine](song) by [Guns N' Roses](artist) from my playlist.
+    - Take out [Wonderwall](song) by [Oasis](artist).
+    - Delete [Shape of You](song) by [Ed Sheeran](artist).
+    - Remove [Imagine](song).
+    - Delete [Bohemian Rhapsody](song).
+    - Take out [Thriller](song).
+    - Remove [Bad Guy](song) by [Billie Eilish](artist).
+    - Delete [Purple Haze](song) by [Jimi Hendrix](artist).
+
+- intent: list_songs_in_playlist
+  examples: |
+    - Show me the songs in my playlist.
+    - What songs are currently in my playlist?
+    - List all songs in the playlist.
+    - Could you display the playlist for me?
+    - I want to see my playlist.
+    - Can you tell me what's in my playlist?
+    - Show my playlist.
+    - What's in my playlist?
+    - List my playlist.
+    - Display playlist.
+
+- intent: empty_playlist
+  examples: |
+    - Clear my playlist.
+    - Empty the playlist, please.
+    - Remove all songs from my playlist.
+    - Clear out my playlist.
+    - Delete everything in my playlist.
+    - Wipe playlist.
+    - Empty playlist.
+    - Remove all.
+    - Clear all.
+    - Delete all songs.
+
 entities:
 - song
 - artist
