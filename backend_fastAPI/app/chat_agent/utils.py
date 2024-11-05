@@ -21,6 +21,12 @@ class Intents(Enum):
     ask_album_release_date = 4
     ask_album_of_song = 5
     ask_albums_of_artist = 6
+    # NEW
+    add_song_to_playlist = 7
+    remove_song_from_playlist = 8
+    list_songs_in_playlist = 9
+    empty_playlist = 10
+
 
 class Commands(Enum):
     hello = "/hello"

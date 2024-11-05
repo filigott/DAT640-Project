@@ -149,3 +149,12 @@ class ChatAgentService:
                         "albums": list(unique_albums)}
         return None  # Indicate that no artist or albums were found
 
+
+    ## TODO
+    def rasa_add_song_to_playlist(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
+        return
+    
+
+    ## TODO
+    def rasa_remove_song_from_playlist(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
+        return
