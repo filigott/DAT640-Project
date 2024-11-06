@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, auto
 import random
 import re
 from typing import Dict
@@ -15,12 +15,18 @@ class IntentType(Enum):
     ALBUM = "album"
 
 class Intents(Enum):
-    ask_song_release_date = 1
-    ask_songs_of_artist = 2
-    ask_artist_of_song = 3
-    ask_album_release_date = 4
-    ask_album_of_song = 5
-    ask_albums_of_artist = 6
+    ask_song_release_date = 0
+    ask_songs_of_artist = auto()
+    ask_artist_of_song = auto()
+    ask_album_release_date = auto()
+    ask_album_of_song = auto()
+    ask_albums_of_artist = auto()
+    # NEW
+    add_song_to_playlist = auto()
+    remove_song_from_playlist = auto()
+    list_songs_in_playlist = auto()
+    empty_playlist = auto()
+
 
 class Commands(Enum):
     hello = "/hello"

@@ -17,6 +17,10 @@ class ChatAgent:
             Intents.ask_album_release_date: self.service.get_album_release_date,
             Intents.ask_album_of_song: self.service.get_album_of_song,
             Intents.ask_albums_of_artist: self.service.get_albums_of_artist,
+            Intents.add_song_to_playlist: self.service.rasa_add_song_to_playlist,
+            Intents.remove_song_from_playlist: self.service.rasa_remove_song_from_playlist,
+            # Intents.list_songs_in_playlist: self.view_playlist,
+            # Intents.empty_playlist: self.clear_playlist_async
         }
         self.welcome_sent = False
         self.response_queue: Deque[str] = deque()  # Queue to store multiple responses
@@ -40,7 +44,7 @@ class ChatAgent:
     async def seed(self) -> str:
         """Initates seeding of demo data playlist"""
         await self.service.seed_async()
-        return "Demo seeding finished"
+        self.add_response("Demo seeding finished")
 
     async def process_message(self, message: str) -> Union[str, List[str]]:
         """Processes a user message and returns an appropriate response."""
@@ -74,17 +78,20 @@ class ChatAgent:
             case _:
                 # Send message to Rasa for intent handling if it's not a command
                 print("Sending message over to Rasa...")
-                self.handle_rasa_response(message)
+                await self.handle_rasa_response(message)
 
 
-    def handle_rasa_response(self, message: str):
+    async def handle_rasa_response(self, message: str):
         """Handles Rasa response, queues any resulting messages."""
+        print("---------------------------------------------------------")
         print(message)
         rasa_resp = requests.post(RASA_URL, json={"text": message}).json()
         intent_name = rasa_resp.get("intent", {}).get("name")
         confidence = rasa_resp.get("intent", {}).get("confidence")
         entities = rasa_resp.get("entities")
 
+        print("Intent: ", intent_name)
+        print("Intent confidence: ", confidence)
         print("Entities:", entities)
 
         intent = Intents.__members__.get(intent_name)
@@ -92,17 +99,29 @@ class ChatAgent:
 
         if confidence > 0.9 and entities:
             entity_type = entities[0].get("entity")
-            if entity_type and entity_type == intent.value:
-                return self.query_backend(intent, entities)
-            
+            if entity_type:
+                await self.query_backend(intent, entities)
+                return
+        
+        # Rasa intents that does not need entity: View playlist and clear playlist
+        if confidence > 0.7 and not entities:
+            if intent == Intents.list_songs_in_playlist:
+                self.view_playlist()
+                return
+            if intent == Intents.empty_playlist:
+                await self.clear_playlist_async()
+                return
+
         self.add_response("I'm sorry, I didn't understand that.")
 
 
-    def query_backend(self, intent: Intents, entities: list):
+    # TODO: replace intent_function map with Intent switch case
+    
+    async def query_backend(self, intent: Intents, entities: list):
         """Queries backend service based on intent and entities, queues response."""
         service_function = self.intent_function_map.get(intent)
         if service_function:
-            result = service_function(entities)
+            result = await service_function(entities)
             if result:
                 message = result.get("message", "I found the information you requested.")
                 self.add_response(message)

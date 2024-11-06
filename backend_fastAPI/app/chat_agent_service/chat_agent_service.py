@@ -59,9 +59,9 @@ class ChatAgentService:
         print(song_description)
         id = r.get_song_by_song_description(self.db, song_description)
         if id:
-            song = r.add_song_to_playlist(self.db, 1, id)
+            song_model = r.add_song_to_playlist(self.db, 1, id)
             await ws_push_playlist_update()
-            return song
+            return song_model
         return None
 
     def remove_song_from_playlist(self, song_description: Dict[str, Any]) -> Optional[SongSchema]:
@@ -136,8 +136,10 @@ class ChatAgentService:
                 return response
         return None  # Indicate that no album was found
 
+
+    ## TODO
     def get_album_of_song(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
-        return self.get_artist_of_song(entity_values)  # Similar logic can be reused
+        return 
 
     def get_albums_of_artist(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
         for entity_val in entity_values:
@@ -149,3 +151,55 @@ class ChatAgentService:
                         "albums": list(unique_albums)}
         return None  # Indicate that no artist or albums were found
 
+
+    async def rasa_add_song_to_playlist(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
+        song_data = {}
+        for entity_data in entity_values:
+            if entity_data['entity'] == "song":
+                value = entity_data['value']
+                song_data["title"] = value
+            if entity_data['entity'] == "artist":
+                value = entity_data['value']
+                song_data["artist"] = value
+        
+        if song_data.get("title"):
+            result = await self.add_song_to_playlist_async(song_data)
+            print(result)
+            if result:
+                return {"message": f"Song '{result.title}' by '{result.artist}' added to playlist.",
+                        "song": result}
+        return None
+
+    async def rasa_remove_song_from_playlist(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
+        song_data = {}
+        for entity_data in entity_values:
+            if entity_data['entity'] == "song":
+                value = entity_data['value']
+                song_data["title"] = value
+            if entity_data['entity'] == "artist":
+                value = entity_data['value']
+                song_data["artist"] = value
+
+        if song_data.get("title"):
+            result = await self.remove_song_from_playlist_async(song_data)
+            return {"message": f"Song '{result.title}' by '{result.artist}' was removed from playlist.",
+                        "song": result}
+        
+        return None
+        
+
+    # async def add_song_async(self, message: str):
+    #     """Handles adding a song and queues example questions."""
+    #     artist, title = parse_add_song_input(message)
+    #     if title:
+    #         song_data = {"artist": artist, "title": title}
+    #         result = await self.service.add_song_to_playlist_async(song_data)
+    #         if result:
+    #             self.add_response(f"Song '{result.title}' by '{result.artist}' added to playlist.")
+    #             if (random.random() < RANDOM_QUESTION_CHANCE):
+    #                 example_question = generate_example_questions(song_data)
+    #                 self.add_response(f"Did you know you can ask me questions like: {example_question}")
+    #         else:
+    #             self.add_response("The song couldn't be added. Please try again.")
+    #     else:
+    #         self.add_response("Please provide the song details to add.")

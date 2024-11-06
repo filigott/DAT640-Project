@@ -27,27 +27,62 @@ def reset_db(db: Session):
 
 
 def seed_db_demo(db: Session):
-    reset_db(db)
-
-    try:
-        # Create demo songs with artist, album, and year information
-        songs = [
-            SongModel(title="Shape of You", artist="Ed Sheeran", album="Divide", year=2017),
-            SongModel(title="Blinding Lights", artist="The Weeknd", album="After Hours", year=2020),
-            SongModel(title="Levitating", artist="Dua Lipa", album="Future Nostalgia", year=2020),
-            SongModel(title="Bad Guy", artist="Billie Eilish", album="When We All Fall Asleep", year=2019),
-            SongModel(title="Watermelon Sugar", artist="Harry Styles", album="Fine Line", year=2019),
+    try:        
+        song_titles = [
+            "Shape of You", "Blinding Lights", "Levitating", 
+            "Bad Guy", "Watermelon Sugar"
         ]
-        db.add_all(songs)
+        artist_map = {
+            "Shape of You": "Ed Sheeran",
+            "Blinding Lights": "The Weeknd",
+            "Levitating": "Dua Lipa",
+            "Bad Guy": "Billie Eilish",
+            "Watermelon Sugar": "Harry Styles"
+        }
+        album_map = {
+            "Shape of You": "Divide",
+            "Blinding Lights": "After Hours",
+            "Levitating": "Future Nostalgia",
+            "Bad Guy": "When We All Fall Asleep",
+            "Watermelon Sugar": "Fine Line"
+        }
+        year_map = {
+            "Shape of You": 2017,
+            "Blinding Lights": 2020,
+            "Levitating": 2020,
+            "Bad Guy": 2019,
+            "Watermelon Sugar": 2019
+        }
+
+        songs = []
+        for title in song_titles:
+            artist = artist_map.get(title)
+            album = album_map.get(title)
+            year = year_map.get(title)
+
+            song = db.query(SongModel).filter(
+                SongModel.title == title,
+                SongModel.artist == artist,
+                SongModel.album == album,
+                SongModel.year == year
+            ).first()
+
+            if song:
+                songs.append(song)
+            else:
+                print(f"Song '{title}' not found in database. Skipping.")
+
+        playlist = db.query(PlaylistModel).filter(PlaylistModel.id == 1).first()
+
+        if not playlist:
+            playlist = PlaylistModel(title="My Favorite Songs", songs=songs)
+            db.add(playlist)
+        else:
+            playlist.songs = songs
         db.commit()
 
-        # Create a playlist and add the songs
-        playlist = PlaylistModel(title="My Favorite Songs", songs=songs)
-        db.add(playlist)
-        db.commit()
+        print("Database seeded successfully with existing songs.")
 
-        print("Database seeded successfully.")
-        
     except Exception as e:
         db.rollback()
         print(f"Error seeding database: {e}")

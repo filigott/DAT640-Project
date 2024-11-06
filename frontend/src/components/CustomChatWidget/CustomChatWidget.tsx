@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import "./CustomChatWidget.css";
 
+interface CustomChatWidgetProps {
+  reconnectAll: () => void; // Add prop to trigger reconnection of all WebSockets
+}
+
 // Custom hook to manage WebSocket connection
 const useWebSocket = (userId: string) => {
   const ws_chat = useRef<WebSocket | null>(null);
@@ -61,13 +65,18 @@ const useWebSocket = (userId: string) => {
   return { messages, setMessages, loading, setLoading, disconnected, establishConnection, hasConnected, ws_chat };
 };
 
-const CustomChatWidget: React.FC = () => {
+const CustomChatWidget: React.FC<CustomChatWidgetProps> = ({ reconnectAll }) => {
   const [input, setInput] = useState("");
   const [messageHistory, setMessageHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1); // Track position in message history
   
   const userId = "user-123";
   const { messages, setMessages, loading, setLoading, disconnected, establishConnection, hasConnected, ws_chat } = useWebSocket(userId);
+
+  function connect(){
+    establishConnection()
+    reconnectAll()
+  }
 
   const handleSendMessage = useCallback(() => {
     if (input.trim() !== "" && ws_chat.current && !disconnected) {
@@ -124,7 +133,7 @@ const CustomChatWidget: React.FC = () => {
       {hasConnected && disconnected && (
         <div className="message system">
           <span>The chat connection has been closed.</span>
-          <button onClick={establishConnection} className="reconnect-button">
+            <button onClick={connect} className="reconnect-button">
             Reconnect
           </button>
         </div>
