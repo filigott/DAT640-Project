@@ -100,7 +100,7 @@ class ChatAgent:
         if confidence > 0.9 and entities:
             entity_type = entities[0].get("entity")
             if entity_type:
-                self.query_backend(intent, entities)
+                await self.query_backend(intent, entities)
                 return
         
         # Rasa intents that does not need entity: View playlist and clear playlist
@@ -117,11 +117,11 @@ class ChatAgent:
 
     # TODO: replace intent_function map with Intent switch case
     
-    def query_backend(self, intent: Intents, entities: list):
+    async def query_backend(self, intent: Intents, entities: list):
         """Queries backend service based on intent and entities, queues response."""
         service_function = self.intent_function_map.get(intent)
         if service_function:
-            result = service_function(entities)
+            result = await service_function(entities)
             if result:
                 message = result.get("message", "I found the information you requested.")
                 self.add_response(message)
