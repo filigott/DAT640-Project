@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import PlaylistComponent from "./components/Playlist";
 import SongListComponent from "./components/Songlist";
@@ -13,33 +13,49 @@ const App: React.FC = () => {
   const playlistId = 1; // Static playlist ID for now
   const [searchTerm, setSearchTerm] = useState("");
   const [searchSongs, setSearchSongs] = useState<Song[]>([]);
+  const playlistWS = useRef<WebSocket | null>(null);
+  // const [isPlaylistDisconnected, setIsPlaylistDisconnected] = useState(false);
 
-  useEffect(() => {
-    // Note. Dev mode calls this code twice startup.
-    fetchPlaylist();
-    
-    // Establish WebSocket connection on mount
-    const ws_playlist = new WebSocket("ws://localhost:8000/ws/playlist")
+  const establishPlaylistConnection = useCallback(() => {
+    if (playlistWS.current) {
+      playlistWS.current.close(); // Close existing connection if any
+    }
+    playlistWS.current = new WebSocket("ws://localhost:8000/ws/playlist");
 
-    ws_playlist.onmessage = (event) => {
-      // Handle incoming messages (e.g., playlist updates)
+    playlistWS.current.onopen = () => {
+      console.log("Connected to playlist WebSocket");
+      // setIsPlaylistDisconnected(false);
+    };
+
+    playlistWS.current.onmessage = (event) => {
       const message = event.data;
       console.log("Received from server:", message);
-
-      // Parse the message if it's JSON (optional)
       const updatedPlaylistId = JSON.parse(message).updated_playlist_id;
 
       if (updatedPlaylistId === playlistId) {
-        // Do something??
         console.log("Updating playlist...");
         fetchPlaylist();
       }
     };
 
-    return () => {
-      ws_playlist?.close();
+    playlistWS.current.onclose = () => {
+      console.log("Disconnected from playlist WebSocket");
+      // setIsPlaylistDisconnected(true);
     };
-  }, []);
+  }, [playlistId]);
+
+  useEffect(() => {
+    fetchPlaylist();
+    establishPlaylistConnection();
+
+    return () => {
+      playlistWS.current?.close();
+    };
+  }, [establishPlaylistConnection]);
+
+  const reconnectAll = useCallback(() => {
+    establishPlaylistConnection();
+  }, [establishPlaylistConnection]);
 
   useEffect(() => {
     if (searchTerm.length >= 3) {  // Fetch only if search term is at least 3 characters
@@ -92,7 +108,7 @@ const App: React.FC = () => {
 
 return (
     <div className="App">
-      <CustomChatWidget />
+       <CustomChatWidget reconnectAll={reconnectAll} />
 
       {playlist ? (
         <>

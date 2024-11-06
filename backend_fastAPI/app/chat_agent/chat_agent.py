@@ -44,7 +44,7 @@ class ChatAgent:
     async def seed(self) -> str:
         """Initates seeding of demo data playlist"""
         await self.service.seed_async()
-        return "Demo seeding finished"
+        self.add_response("Demo seeding finished")
 
     async def process_message(self, message: str) -> Union[str, List[str]]:
         """Processes a user message and returns an appropriate response."""
@@ -83,6 +83,7 @@ class ChatAgent:
 
     async def handle_rasa_response(self, message: str):
         """Handles Rasa response, queues any resulting messages."""
+        print("---------------------------------------------------------")
         print(message)
         rasa_resp = requests.post(RASA_URL, json={"text": message}).json()
         intent_name = rasa_resp.get("intent", {}).get("name")
@@ -95,12 +96,12 @@ class ChatAgent:
 
         intent = Intents.__members__.get(intent_name)
         print("Intent mapped from Rasa:", intent)
-        print("Intent value: ", intent.value)
 
         if confidence > 0.9 and entities:
             entity_type = entities[0].get("entity")
-            if entity_type: #and entity_type == intent.value: Enum not working as inttended here
-                return self.query_backend(intent, entities)
+            if entity_type:
+                self.query_backend(intent, entities)
+                return
         
         # Rasa intents that does not need entity: View playlist and clear playlist
         if confidence > 0.7 and not entities:
@@ -114,6 +115,8 @@ class ChatAgent:
         self.add_response("I'm sorry, I didn't understand that.")
 
 
+    # TODO: replace intent_function map with Intent switch case
+    
     def query_backend(self, intent: Intents, entities: list):
         """Queries backend service based on intent and entities, queues response."""
         service_function = self.intent_function_map.get(intent)
