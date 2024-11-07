@@ -24,6 +24,7 @@ class ChatAgent:
         }
         self.welcome_sent = False
         self.response_queue: Deque[str] = deque()  # Queue to store multiple responses
+        self.cache = []
     
     def add_response(self, message: str, action: str = "message"):
         """Add a structured response to the response queue with a default action."""
@@ -97,20 +98,52 @@ class ChatAgent:
         intent = Intents.__members__.get(intent_name)
         print("Intent mapped from Rasa:", intent)
 
-        if confidence > 0.9 and entities:
-            entity_type = entities[0].get("entity")
-            if entity_type:
-                await self.query_backend(intent, entities)
-                return
+        # if confidence > 0.8 and entities:
+        #     entity_type = entities[0].get("entity")
+        #     if entity_type:
+        #         await self.query_backend(intent, entities)
+        #         return
         
         # Rasa intents that does not need entity: View playlist and clear playlist
-        if confidence > 0.7 and not entities:
-            if intent == Intents.list_songs_in_playlist:
-                self.view_playlist()
-                return
-            if intent == Intents.empty_playlist:
-                await self.clear_playlist_async()
-                return
+        # if confidence > 0.7 and not entities:
+        #     if intent == Intents.list_songs_in_playlist:
+        #         self.view_playlist()
+        #         return
+        #     if intent == Intents.empty_playlist:
+        #         await self.clear_playlist_async()
+        #         return
+
+        if len(self.cache) != 0:
+            match intent:
+                case Intents.add_all_recommended_songs:
+                    await self.add_recommended_songs(entities)
+                    self.cache = []
+                    return
+                case Intents.add_position_recommended_songs:
+                    await self.add_position_recommended_songs(entities)
+                    self.cache = []
+                    return
+                case Intents.add_all_except_recommended_songs:
+                    self.add_all_except_recommended_songs(entities)
+                case _:
+                    self.cache = []
+            
+             
+        if confidence > 0.5 and len(self.cache) == 0:
+            match intent:
+                case Intents.list_songs_in_playlist:
+                    self.view_playlist()
+                case Intents.empty_playlist:
+                    await self.clear_playlist_async()
+                case Intents.remove_from_playlist_position:
+                    await self.remove_from_playlist_position(entities)
+                case Intents.song_release_date_position:
+                    await self.song_release_date_position(entities)
+                case Intents.recommend_songs_based_on_playlist:
+                    await self.recommend_songs_based_on_playlist()
+                case _:
+                    await self.query_backend(intent, entities)
+            return
 
         self.add_response("I'm sorry, I didn't understand that.")
 
@@ -176,9 +209,49 @@ class ChatAgent:
         else:
             self.add_response("I couldn't retrieve the playlist details.")
 
-
     async def clear_playlist_async(self):
         """Clears the playlist and queues confirmation."""
         await self.service.clear_playlist_async()
         self.add_response("Playlist cleared.")
     
+
+    async def remove_from_playlist_position(self, entities):
+        result = await self.service.remove_from_playlist_position(entities)
+        if result:
+            message = result.get("message", "I found the information you requested.")
+            self.add_response(message)
+            songs = result.get("songs")
+            if songs:
+                for song in songs:
+                    self.add_response(f"{song.title} by {song.artist}")
+        else:
+            self.add_response("I couldn't find the information you're looking for.")
+
+    async def song_release_date_position(self, entities):
+        result = await self.service.song_release_date_position(entities)
+        if result:
+            message = result.get("message", "I found the information you requested.")
+            self.add_response(message)
+        else:
+            self.add_response("I couldn't find the information you're looking for.")
+
+    
+    async def recommend_songs_based_on_playlist(self):
+        result = await self.service.recommend_songs_based_on_playlist()
+        if result:
+            self.add_response(result.get("message"))
+            songs = result.get("songs")
+            self.cache = songs
+            for index, song in enumerate(songs):
+                self.add_response(f"{index+1}: {song.title} by {song.artist}, id: {song.id}")
+
+
+    async def add_recommended_songs(self, entities):
+        result = await self.service.add_from_recommendations(entities, self.cache)
+        if result:
+            self.add_response(result.get("message"))
+    
+    async def add_position_recommended_songs(self, entities):
+        result = await self.service.add_from_recommendations_position(entities, self.cache)
+        if result:
+            self.add_response(result.get("message"))

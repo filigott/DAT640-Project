@@ -1,4 +1,5 @@
 import os
+import random
 from typing import Optional, List
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -159,3 +160,30 @@ def get_songs_by_album(db: Session, album_name: str) -> List[SongModel]:
         return []
     songs = db.query(SongModel).filter(SongModel.album.ilike(f"%{album_name}%")).all()
     return songs
+
+
+def remove_songs_from_playlist_position(db: Session, pos_index: int, number: int = 1, playlist_id: int = 1):
+    playlist = get_playlist(db, playlist_id)
+    songs = [song.id for song in playlist.songs]
+    
+
+def get_recommendations_from_playlist(db: Session, playlist_id: int = 1, num_recommendations: int = 10) -> List[SongModel]:
+    playlist = get_playlist(db, playlist_id)
+
+    # artists = set(song['artist'] for song in playlist.songs)
+    # albums = set(song['album'] for song in playlist.songs)
+    # titles = set(song['title'] for song in playlist.songs)
+
+    artists = set(song.artist for song in playlist.songs)
+    albums = set(song.album for song in playlist.songs)
+    titles = set(song.title for song in playlist.songs)
+
+    songs = db.query(SongModel).filter((
+        SongModel.artist.in_(artists)), 
+        SongModel.title.notin_(titles)
+    ).all()
+
+    random_recommendations = random.sample(songs, num_recommendations)
+
+    return random_recommendations
+

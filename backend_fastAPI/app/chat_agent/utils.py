@@ -26,6 +26,15 @@ class Intents(Enum):
     remove_song_from_playlist = auto()
     list_songs_in_playlist = auto()
     empty_playlist = auto()
+    # NEW NEW
+    remove_from_playlist_position = auto()
+    song_release_date_position = auto()
+    recommend_songs_based_on_playlist = auto()
+    # NEW NEW NEW
+    add_all_recommended_songs = auto()
+    add_position_recommended_songs = auto()
+    add_all_except_recommended_songs = auto()
+
 
 
 class Commands(Enum):
