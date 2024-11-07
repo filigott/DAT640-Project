@@ -1,13 +1,15 @@
-import os
 from typing import Optional, List
-from sqlalchemy import or_
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
-
-from app.init_db import seed_db_demo
-from ..models import PlaylistModel, SongModel
+from unidecode import unidecode
 from rapidfuzz import process
 
+from app.init_db import seed_db_demo
+from app.utils import advanced_normalize_text
+from ..models import PlaylistModel, SongModel
+
 MAX_NUM_SONGS_SEARCH = 10
+RAPIDFUZZ_SCORE_CUTOFF = 80
 
 def demo_seed_database(db: Session):
     seed_db_demo(db)
@@ -113,6 +115,11 @@ def get_song_id(db: Session, song_description: dict) -> Optional[int]:
 
 def get_song_by_song_description(db: Session, song_description: dict) -> Optional[int]:
     """Get a song ID based on the song title."""
+     # If 'id' is already provided in the description, return it directly
+    song_id = song_description.get("id")
+    if song_id:
+        return song_id
+    
     song_name = song_description.get("title")
     artist_name = song_description.get("artist")
     ##album_name = song_description["data"].get("album")
@@ -146,12 +153,11 @@ def get_songs_by_artist(db: Session, artist_name: str) -> List[SongModel]:
         all_artists = db.query(SongModel.artist).distinct().all()
         artist_names = [artist[0] for artist in all_artists] 
 
-        best_match = process.extractOne(artist_name, artist_names, score_cutoff=75)
+        best_match = process.extractOne(artist_name, artist_names, score_cutoff=RAPIDFUZZ_SCORE_CUTOFF)
         if best_match:
             songs = db.query(SongModel).filter(SongModel.artist == best_match[0]).all()
             return songs
         return songs
-
 
 def get_songs_by_album(db: Session, album_name: str) -> List[SongModel]:
     """Get a list of songs based on the album name."""
@@ -159,3 +165,65 @@ def get_songs_by_album(db: Session, album_name: str) -> List[SongModel]:
         return []
     songs = db.query(SongModel).filter(SongModel.album.ilike(f"%{album_name}%")).all()
     return songs
+
+def find_fuzzy_song_matches(
+    db: Session, 
+    title: str, 
+    artist: Optional[str] = None, 
+    album: Optional[str] = None, 
+    year: Optional[int] = None
+) -> List[SongModel]:
+    """Find songs that match the specified criteria with flexible matching."""
+
+    # Normalize the input title for fuzzy matching
+    normalized_title = advanced_normalize_text(title)
+
+    # Start the query with ilike to allow partial matches on the normalized title
+    query = db.query(SongModel).filter(SongModel.normalized_title.ilike(f"%{normalized_title}%"))
+    
+    if artist:
+        query = query.filter(SongModel.artist.ilike(f"%{artist}%"))
+    if album:
+        query = query.filter(SongModel.album.ilike(f"%{album}%"))
+    if year:
+        query = query.filter(SongModel.year == year)
+    
+    # Retrieve initial candidates using the ilike query
+    candidates: List[SongModel] = query.limit(50).all()
+
+    print("Num fuzzy song matches candidates: ", len(candidates))
+    
+    # Normalize the titles of all candidates for better matching
+    candidate_titles = [advanced_normalize_text(c.title) for c in candidates]
+    
+    # Perform fuzzy matching using the normalized title
+    scored_candidates = process.extract(normalized_title, candidate_titles, score_cutoff=RAPIDFUZZ_SCORE_CUTOFF)
+    
+    # Map back to SongModel objects using the index of matches in scored_candidates
+    matched_songs = [candidates[idx] for _, score, idx in scored_candidates]
+    
+    return matched_songs[:MAX_NUM_SONGS_SEARCH]
+
+
+def find_exact_song_match(
+    db: Session, 
+    title: str, 
+    artist: Optional[str] = None, 
+    album: Optional[str] = None, 
+    year: Optional[int] = None
+) -> Optional[SongModel]:
+    """Attempts to find a song with an exact match on title, artist, album, and year."""
+
+    # Apply exact filters for title, artist, album, and year
+    filters = [SongModel.title == title]
+    if artist:
+        filters.append(SongModel.artist == artist)
+    if album:
+        filters.append(SongModel.album == album)
+    if year:
+        filters.append(SongModel.year == year)
+
+    # Query with all filters applied. NB! need limit higher than 1
+    matched_songs = db.query(SongModel).filter(and_(*filters)).limit(2).all()
+    
+    return matched_songs[0] if len(matched_songs) == 1 else None

@@ -73,6 +73,20 @@ const CustomChatWidget: React.FC<CustomChatWidgetProps> = ({ reconnectAll }) => 
   const userId = "user-123";
   const { messages, setMessages, loading, setLoading, disconnected, establishConnection, hasConnected, ws_chat } = useWebSocket(userId);
 
+  // Reference to scroll to the bottom of the messages
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Function to scroll to the bottom
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom(); // Scroll to the bottom every time messages change
+  }, [messages, loading, disconnected, hasConnected]); // Runs when messages change
+
   function connect(){
     establishConnection()
     reconnectAll()
@@ -128,6 +142,8 @@ const CustomChatWidget: React.FC<CustomChatWidgetProps> = ({ reconnectAll }) => 
           </div>
         ))}
         {loading && <div className="loading">Typing...</div>}
+        {/* This div ensures the page scrolls to the bottom */}
+        <div ref={messagesEndRef} />
       </div>
       {/* Only show the disconnected message if has connected */}
       {hasConnected && disconnected && (
