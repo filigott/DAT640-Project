@@ -24,6 +24,9 @@ class SongModel(DB_Base):
     duration = Column(Integer)
     tempo = Column(Float)
 
+    # New normalized title column
+    normalized_title = Column(String, nullable=False)
+
     playlists = relationship('PlaylistModel', secondary=PlaylistSongsTable, back_populates='songs')
 
     def to_dto(self):

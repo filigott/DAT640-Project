@@ -1,5 +1,3 @@
-import os
-import re
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 
@@ -31,26 +29,6 @@ class ChatAgentService:
             "ten": 10,
         }
 
-    def clean(self, input: str) -> str:
-        return re.sub(r'[^\x00-\x7F]+', '', input)
-
-    def save_data_to_disk(self) -> None:
-        file_data = {
-            "all_songs.yml": (SongModel.title, 'song'),
-            "all_artists.yml": (SongModel.artist, 'artist'),
-            "all_albums.yml": (SongModel.album, 'album'),
-        }
-
-        for filename, (column, lookup_type) in file_data.items():
-            distinct_values = self.db.query(column).distinct().all()
-            with open(filename, "w", encoding="utf-8") as f:
-                f.write('version: "3.1"\n')
-                f.write('nlu:\n')
-                f.write(f'- lookup: {lookup_type}\n')
-                f.write('  examples: |\n')
-                for value in distinct_values:
-                    f.write(f"    - {value[0]}\n")
-
     async def seed_async(self) -> bool:
         r.seed_db_demo(self.db)
         await ws_push_playlist_update()
@@ -69,8 +47,8 @@ class ChatAgentService:
     def add_song_to_playlist(self, song_description: Dict[str, Any]) -> Optional[SongSchema]:
         id = r.get_song_by_song_description(self.db, song_description)
         if id:
-            song = r.add_song_to_playlist(self.db, 1, id)
-            return song
+            song_model = r.add_song_to_playlist(self.db, 1, id)
+            return song_model.to_dto()
         return None
 
     async def add_song_to_playlist_async(self, song_description: Dict[str, Any]) -> Optional[SongSchema]:
@@ -79,22 +57,22 @@ class ChatAgentService:
         if id:
             song_model = r.add_song_to_playlist(self.db, 1, id)
             await ws_push_playlist_update()
-            return song_model
+            return song_model.to_dto()
         return None
 
     def remove_song_from_playlist(self, song_description: Dict[str, Any]) -> Optional[SongSchema]:
         id = r.get_song_by_song_description(self.db, song_description) 
         if id:
-            song = r.remove_song_from_playlist(self.db, 1, id)
-            return song
+            song_model = r.remove_song_from_playlist(self.db, 1, id)
+            return song_model.to_dto()
         return None
     
     async def remove_song_from_playlist_async(self, song_description: Dict[str, Any]) -> Optional[SongSchema]:
         id = r.get_song_by_song_description(self.db, song_description) 
         if id:
-            song = r.remove_song_from_playlist(self.db, 1, id)
+            song_model = r.remove_song_from_playlist(self.db, 1, id)
             await ws_push_playlist_update()
-            return song
+            return song_model.to_dto()
         return None
     
     def view_playlist(self, playlist_id: int = 1):
@@ -154,7 +132,6 @@ class ChatAgentService:
                 return response
         return None  # Indicate that no album was found
 
-
     ## TODO
     def get_album_of_song(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
         return 
@@ -168,26 +145,7 @@ class ChatAgentService:
                 return {"message": f"The albums by {artist_name} are: {', '.join(unique_albums)}",
                         "albums": list(unique_albums)}
         return None  # Indicate that no artist or albums were found
-
-
-    async def rasa_add_song_to_playlist(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
-        song_data = {}
-        for entity_data in entity_values:
-            if entity_data['entity'] == "song":
-                value = entity_data['value']
-                song_data["title"] = value
-            if entity_data['entity'] == "artist":
-                value = entity_data['value']
-                song_data["artist"] = value
-        
-        if song_data.get("title"):
-            result = await self.add_song_to_playlist_async(song_data)
-            print(result)
-            if result:
-                return {"message": f"Song '{result.title}' by '{result.artist}' added to playlist.",
-                        "song": result}
-        return None
-
+    
     async def rasa_remove_song_from_playlist(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
         song_data = {}
         for entity_data in entity_values:
@@ -245,7 +203,6 @@ class ChatAgentService:
 
         return {"message": "Did not understand"}
     
-
     async def song_release_date_position(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
         position_data = {}
         for entity_data in entity_values:
@@ -265,12 +222,10 @@ class ChatAgentService:
 
         return {"message": "Did not understand"}
     
-
     async def recommend_songs_based_on_playlist(self) -> Optional[Dict[str, Any]]:
         songs = r.get_recommendations_from_playlist(self.db)
         recommended_songs = [song.to_dto() for song in songs]
         return {"message": "Recommendations based on your playlist: ", "songs": recommended_songs}
-
 
     async def add_from_recommendations(self, entity_values: List[Dict[str, str]], cache) -> Optional[Dict[str, Any]]:
         song_data = {}
@@ -330,9 +285,34 @@ class ChatAgentService:
         result = await self.add_multiple_songs_to_playlist(song_ids)
         return result
 
-
     async def add_multiple_songs_to_playlist(self, ids):
         for id in ids:
             r.add_song_to_playlist(self.db, 1, id)
         await ws_push_playlist_update()
         return {"message": "Added songs"}
+
+    def find_song_matches(
+        self, 
+        title: str, 
+        artist: Optional[str] = None, 
+        album: Optional[str] = None, 
+        year: Optional[int] = None
+    ) -> List[SongSchema]:
+        """Finds matching songs based on title and other optional fields like artist, album, and year."""
+
+        # Step 1: Attempt an exact match first
+        exact_match = r.find_exact_song_match(self.db, title, artist, album, year)
+        
+        if exact_match:
+            # Return a single exact match as a list with one item
+            return [SongModel.to_dto(exact_match)]
+
+        # Step 2: If no exact match, try flexible matching with find_song_matches
+        matched_songs_models = r.find_fuzzy_song_matches(self.db, title, artist, album, year)
+        
+        # If matches are found, convert the list of SongModel instances to DTOs
+        if matched_songs_models:
+            return SongModel.list_to_dto(matched_songs_models)
+
+        # Return an empty list if no matches are found
+        return []

@@ -12,6 +12,7 @@ language: en
 
 pipeline:
   - name: WhitespaceTokenizer
+    case_sensitive: false
   - name: RegexFeaturizer
   - name: LexicalSyntacticFeaturizer
   - name: CountVectorsFeaturizer
@@ -19,4 +20,5 @@ pipeline:
     epochs: 200
     entity_recognition: True
     constrain_similarities: True
+  - name: EntitySynonymMapper
 

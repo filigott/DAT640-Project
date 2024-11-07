@@ -28,6 +28,12 @@ nlu:
     - do you know the release year of the song [bad guy](song)?
     - when did [sweet child o' mine](song) get released?
     - what is the release date for the track [uptown funk](song)?
+    - WHEN WAS THE SONG [SHAPE OF YOU](song) RELEASED?
+    - CAN YOU TELL ME THE RELEASE DATE OF [BOHEMIAN RHAPSODY](song)?
+    - WHAT IS THE RELEASE YEAR OF THE SONG [IMAGINE](song)?
+    - I WANT TO KNOW WHEN THE SONG [THRILLER](song) CAME OUT.
+    - WHAT YEAR DID [BILLIE JEAN](song) RELEASE?
+    - DO YOU KNOW THE RELEASE DATE OF [SMELLS LIKE TEEN SPIRIT](song)?
 
 - intent: ask_songs_of_artist
   examples: |
@@ -57,11 +63,14 @@ nlu:
     - what are the top hits from [lady gaga](artist)?
     - which tracks did [bruno mars](artist) sing?
     - show me songs sung by [kanye west](artist).
+    - WHAT SONGS DOES [ED SHEERAN](artist) HAVE?
+    - LIST THE SONGS BY [QUEEN](artist).
+    - CAN YOU SHOW ME THE SONGS OF [ADELE](artist)?
 
 - intent: ask_artist_of_song
   examples: |
-    - Who has released the song [Shape of you](song)?
-    - Who has released [Shape of you]?
+    - Who has released the song [Shape of You](song)?
+    - Who has released [Shape of You]?
     - Who released the song [Imagine](song)?
     - Who released [Hotel California](song)?
     - Who sings [Shape of You](song)?
@@ -89,7 +98,7 @@ nlu:
     - who's the musician for [lose yourself](song)?
     - which singer sang [hallelujah](song)?
     - do you know who the singer of [poker face](song) is?
-    - what artist is associated with [bohemian rhapsody](song)?
+    - WHAT ARTIST IS ASSOCIATED WITH [BOHEMIAN RHAPSODY](song)?
 
 - intent: ask_album_release_date
   examples: |
@@ -118,7 +127,7 @@ nlu:
     - when did [1989](album) come out?
     - what year was the album [hotel california](album) launched?
     - can you tell me the release date for [goodbye yellow brick road](album)?
-    - when was the album [ok computer](album) first released?
+    - WHEN WAS THE ALBUM [OK COMPUTER](album) FIRST RELEASED?
 
 - intent: ask_album_of_song
   examples: |
@@ -131,10 +140,10 @@ nlu:
     - Do you know what album [Smells Like Teen Spirit](song) is in?
     - Tell me the album that has [Sweet Child O' Mine](song).
     - Which album includes the song [Rolling in the Deep](song)?
-    - On what album is [Bohemian Rhapsody](song) featured?
-    - Can you find the album for the song [Purple Rain](song)?
-    - What record contains the track [Lose Yourself](song)?
-    - What album can I find [Creep](song) on?
+    - Can you tell me the album of [Stairway to Heaven](song)?
+    - What album is [Back in Black](song) a part of?
+    - Which album has the track [Bohemian Rhapsody](song)?
+    - Where can I find the song [Purple Rain](song)?
     - which album is the song [shape of you](song) from?
     - what album does the song [imagine](song) belong to?
     - can you tell me the album of the song [let it be](song)?
@@ -144,10 +153,10 @@ nlu:
     - do you know what album [smells like teen spirit](song) is in?
     - tell me the album that has [sweet child o' mine](song).
     - which album includes the song [rolling in the deep](song)?
-    - on what album is [bohemian rhapsody](song) featured?
-    - can you find the album for the song [purple rain](song)?
-    - what record contains the track [lose yourself](song)?
-    - what album can i find [creep](song) on?
+    - can you tell me the album of [stairway to heaven](song)?
+    - what album is [back in black](song) a part of?
+    - which album has the track [bohemian rhapsody](song)?
+    - WHERE CAN I FIND THE SONG [PURPLE RAIN](song)?
 
 - intent: ask_albums_of_artist
   examples: |
@@ -177,6 +186,9 @@ nlu:
     - which albums did [nirvana](artist) release?
     - list all the albums recorded by [bruce springsteen](artist).
     - do you know the albums from [frank sinatra](artist)?
+    - WHAT ALBUMS DOES [PINK FLOYD](artist) HAVE?
+    - CAN YOU LIST THE ALBUMS OF [ADELE](artist)?
+    - TELL ME THE ALBUMS BY [LED ZEPPELIN](artist)?
 
 - intent: add_song_to_playlist
   examples: |
@@ -186,7 +198,7 @@ nlu:
     - Put [Imagine](song) into my playlist.
     - I want to add [Thriller](song) to my playlist.
     - Can you include [Bad Guy](song) in my playlist?
-    - Add [Shape of You](song) by [Ed Sheeran](artist) to my playlist.
+    - Add the song [Shape of You](song) by [Ed Sheeran](artist) from the album [Divide](album).
     - Please add [Bohemian Rhapsody](song) by [Queen](artist) to the playlist.
     - Include [Thriller](song) by [Michael Jackson](artist).
     - Put [Wonderwall](song) by [Oasis](artist) in my playlist.
@@ -196,6 +208,17 @@ nlu:
     - Put [Imagine](song).
     - Add [Thriller](song) by [Michael Jackson](artist).
     - Include [Bad Guy](song) by [Billie Eilish](artist).
+    - Add the song [Don't Stop Believin'](song) to the playlist.
+    - Add the song [dont stop believin](song) to my playlist
+    - add [shape of you](song) to my playlist
+    - could you add [bohemian rhapsody](song) to the playlist?
+    - put [imagine](song) into my playlist.
+    - i want to add [thriller](song) to my playlist.
+    - can you include [bad guy](song) in my playlist?
+    - add [shape of you](song) by [ed sheeran](artist) to my playlist.
+    - please add [bohemian rhapsody](song) by [queen](artist) to the playlist.
+    - include [thriller](song) by [michael jackson](artist).
+    - PUT [IMAGINE](song) INTO MY PLAYLIST.
 
 - intent: remove_song_from_playlist
   examples: |
@@ -214,6 +237,16 @@ nlu:
     - Take out [Thriller](song).
     - Remove [Bad Guy](song) by [Billie Eilish](artist).
     - Delete [Purple Haze](song) by [Jimi Hendrix](artist).
+    - REMOVE [SHAPE OF YOU](song) FROM MY PLAYLIST.
+    - could you delete [bohemian rhapsody](song) from the playlist?
+    - take [imagine](song) out of my playlist.
+    - i want to remove [thriller](song) from my playlist.
+    - can you take [bad guy](song) off my playlist?
+    - remove the song [hey jude](song) from my playlist.
+    - please delete [smells like teen spirit](song) from the playlist.
+    - remove [sweet child o' mine](song) by [guns n' roses](artist) from my playlist.
+    - take out [wonderwall](song) by [oasis](artist).
+    - DELETE [SHAPE OF YOU](song) BY [ED SHEERAN](artist).
 
 - intent: list_songs_in_playlist
   examples: |
