@@ -1,5 +1,7 @@
 import sqlite3
 from sqlalchemy.orm import Session
+
+from app.utils import advanced_normalize_text
 from .models import PlaylistModel, SongModel, PlaylistSongsTable
 from sqlalchemy.orm import Session
 
@@ -25,72 +27,86 @@ def reset_db(db: Session):
         db.rollback()
         print(f"Error resetting the database: {e}")
 
+def get_or_create_song(db: Session, title: str, artist: str, album: str, year: int) -> SongModel:
+    """Helper function to fetch or create a song in the database."""
+    normalized_title = advanced_normalize_text(title)
+    
+    song = db.query(SongModel).filter(
+        SongModel.title == title,
+        SongModel.artist == artist,
+        SongModel.year == year
+    ).first()
+    
+    if not song:
+        song = SongModel(title=title, artist=artist, album=album, year=year, normalized_title=normalized_title)
+        db.add(song)
+        db.commit()
+        db.refresh(song)
+    
+    return song
+
+def add_demo_songs_to_playlist(db: Session, playlist_id: int):
+    """Helper function to add predefined demo songs to a playlist."""
+    song_titles = [
+        "Shape of You", "Blinding Lights", "Levitating", 
+        "Bad Guy", "Watermelon Sugar"
+    ]
+    artist_map = {
+        "Shape of You": "Ed Sheeran",
+        "Blinding Lights": "The Weeknd",
+        "Levitating": "Dua Lipa",
+        "Bad Guy": "Billie Eilish",
+        "Watermelon Sugar": "Harry Styles"
+    }
+    album_map = {
+        "Shape of You": "Divide",
+        "Blinding Lights": "After Hours",
+        "Levitating": "Future Nostalgia",
+        "Bad Guy": "When We All Fall Asleep",
+        "Watermelon Sugar": "Fine Line"
+    }
+    year_map = {
+        "Shape of You": 2017,
+        "Blinding Lights": 2020,
+        "Levitating": 2020,
+        "Bad Guy": 2019,
+        "Watermelon Sugar": 2019
+    }
+
+    songs_to_add = []
+    for title in song_titles:
+        artist = artist_map.get(title)
+        album = album_map.get(title)
+        year = year_map.get(title)
+
+        song = get_or_create_song(db, title, artist, album, year)
+        songs_to_add.append(song)
+
+    playlist: PlaylistModel = db.query(PlaylistModel).filter(PlaylistModel.id == playlist_id).first()
+
+    if not playlist:
+        playlist = PlaylistModel(title="My Favorite Songs", songs=songs_to_add)
+        db.add(playlist)
+    else:
+        playlist.songs.extend(songs_to_add)
+
+    db.commit()
+    print(f"Added demo songs to playlist {playlist_id}.")
+
 
 def seed_db_demo(db: Session):
-    try:        
-        song_titles = [
-            "Shape of You", "Blinding Lights", "Levitating", 
-            "Bad Guy", "Watermelon Sugar"
-        ]
-        artist_map = {
-            "Shape of You": "Ed Sheeran",
-            "Blinding Lights": "The Weeknd",
-            "Levitating": "Dua Lipa",
-            "Bad Guy": "Billie Eilish",
-            "Watermelon Sugar": "Harry Styles"
-        }
-        album_map = {
-            "Shape of You": "Divide",
-            "Blinding Lights": "After Hours",
-            "Levitating": "Future Nostalgia",
-            "Bad Guy": "When We All Fall Asleep",
-            "Watermelon Sugar": "Fine Line"
-        }
-        year_map = {
-            "Shape of You": 2017,
-            "Blinding Lights": 2020,
-            "Levitating": 2020,
-            "Bad Guy": 2019,
-            "Watermelon Sugar": 2019
-        }
-
-        songs = []
-        for title in song_titles:
-            artist = artist_map.get(title)
-            album = album_map.get(title)
-            year = year_map.get(title)
-
-            song = db.query(SongModel).filter(
-                SongModel.title == title,
-                SongModel.artist == artist,
-                SongModel.album == album,
-                SongModel.year == year
-            ).first()
-
-            if song:
-                songs.append(song)
-            else:
-                print(f"Song '{title}' not found in database. Skipping.")
-
-        playlist = db.query(PlaylistModel).filter(PlaylistModel.id == 1).first()
-
-        if not playlist:
-            playlist = PlaylistModel(title="My Favorite Songs", songs=songs)
-            db.add(playlist)
-        else:
-            playlist.songs = songs
-        db.commit()
-
-        print("Database seeded successfully with existing songs.")
+    """Seeds the database with manually defined demo songs and adds them to a playlist."""
+    try:
+        add_demo_songs_to_playlist(db, playlist_id=1)
+        print("Database seeded successfully with demo songs.")
 
     except Exception as e:
         db.rollback()
         print(f"Error seeding database: {e}")
 
 
-
 def seed_db_dataset_sqlite(db: Session, sqlite_db_path: str):
-    # TODO: Get large dataset and seed data into respective tables
+    """Seeds the database with songs from an SQLite dataset and adds demo songs to a playlist."""
     reset_db(db)
 
     try:
@@ -113,6 +129,7 @@ def seed_db_dataset_sqlite(db: Session, sqlite_db_path: str):
             year = int(row[3].split('-')[0]) if row[3] else None  # Extract year from release date
             duration = (row[4] // 1000) if row[4] is not None else None  # Handle missing duration
             tempo = row[5] if row[5] is not None else None  # Handle missing tempo
+            normalized_title = advanced_normalize_text(title)
 
             song = SongModel(
                 title=title,
@@ -120,7 +137,8 @@ def seed_db_dataset_sqlite(db: Session, sqlite_db_path: str):
                 album=album,
                 year=year,
                 duration=duration,
-                tempo=tempo
+                tempo=tempo,
+                normalized_title=normalized_title
             )
             songs.append(song)
 
@@ -136,10 +154,8 @@ def seed_db_dataset_sqlite(db: Session, sqlite_db_path: str):
 
         print(f"Inserted {len(songs)} total songs from SQLite to PostgreSQL.")
 
-        # Create a playlist
-        playlist = PlaylistModel(title="My Favorite Songs", songs=[])
-        db.add(playlist)
-        db.commit()
+        # Add the demo songs to the playlist with id = 1
+        add_demo_songs_to_playlist(db, playlist_id=1)
 
     except Exception as e:
         db.rollback()
