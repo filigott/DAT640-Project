@@ -24,11 +24,19 @@ class Intents(Enum):
     ask_album_release_date = auto()
     ask_album_of_song = auto()
     ask_albums_of_artist = auto()
-    # NEW
+
     add_song_to_playlist = auto()
     remove_song_from_playlist = auto()
     list_songs_in_playlist = auto()
     empty_playlist = auto()
+
+    remove_from_playlist_position = auto()
+    song_release_date_position = auto()
+    recommend_songs_based_on_playlist = auto()
+
+    add_all_recommended_songs = auto()
+    add_position_recommended_songs = auto()
+    add_all_except_recommended_songs = auto()
 
 
 class Commands(Enum):
@@ -50,7 +58,6 @@ class AddSongState(Enum):
     waiting_for_clarification = auto()
     continue_clarification = auto()
     song_added = auto()
-    finished = auto()
 
 class RecommendPlaylistState(Enum):
     default = 0

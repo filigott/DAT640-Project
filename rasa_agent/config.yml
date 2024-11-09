@@ -17,7 +17,6 @@ pipeline:
   - name: LexicalSyntacticFeaturizer
   - name: CountVectorsFeaturizer
   - name: DIETClassifier
-    epochs: 100
-    entity_recognition: True
+    constrain_similarities: True
   - name: EntitySynonymMapper
 

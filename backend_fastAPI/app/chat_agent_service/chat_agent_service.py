@@ -1,5 +1,3 @@
-import os
-import re
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 
@@ -12,6 +10,24 @@ import app.repository as r
 class ChatAgentService:
     def __init__(self, db_session: Session):
         self.db = db_session
+        self.position_map = {
+            "first": 1,
+            "second": 2,
+            "third": 3,
+            "fourth": 4, 
+            "fifth": 5,
+            "sixth": 6,
+            "seventh": 7,
+            "eight": 8,
+            "ninth": 9,
+            "last": 0
+        }
+
+        self.number_map = {
+            "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4,
+            "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
+            "ten": 10,
+        }
 
     async def seed_async(self) -> bool:
         r.seed_db_demo(self.db)
@@ -70,7 +86,7 @@ class ChatAgentService:
         r.clear_playlist(self.db, playlist_id)
         await ws_push_playlist_update()
 
-    def get_song_release_date(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
+    async def get_song_release_date(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
         for entity in entity_values:
             entity_value = entity["value"]
             song_models = r.get_songs_by_name(self.db, entity_value)
@@ -88,7 +104,7 @@ class ChatAgentService:
 
         return None  # Indicate that no match was found
     
-    def get_songs_by_artist(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
+    async def get_songs_by_artist(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
         for entity_val in entity_values:
             artist_name = entity_val["value"]
             song_models = r.get_songs_by_artist(self.db, artist_name)
@@ -116,12 +132,11 @@ class ChatAgentService:
                 return response
         return None  # Indicate that no album was found
 
-
     ## TODO
     def get_album_of_song(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
         return 
 
-    def get_albums_of_artist(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
+    async def get_albums_of_artist(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
         for entity_val in entity_values:
             artist_name = entity_val["value"]
             song_models = r.get_songs_by_artist(self.db, artist_name)
@@ -131,7 +146,6 @@ class ChatAgentService:
                         "albums": list(unique_albums)}
         return None  # Indicate that no artist or albums were found
     
-
     async def rasa_remove_song_from_playlist(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
         song_data = {}
         for entity_data in entity_values:
@@ -148,7 +162,134 @@ class ChatAgentService:
                         "song": result}
         
         return None
+    
+    async def remove_from_playlist_position(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
+        position_data = {}
+        for entity_data in entity_values:
+            entity = entity_data['entity']
+            value = entity_data['value']
+            position_data[entity] = value
         
+        position = position_data.get("position")
+        number = position_data.get("number")
+        
+
+        playlist = r.get_playlist(self.db, 1)
+        songs = [song for song in playlist.songs]
+        
+        remove_ids = []
+
+        if position and number:
+            pos_index = self.position_map.get(position) - 1
+            num = self.number_map.get(number)
+            if pos_index == -1:
+                songs.reverse()
+                songs = songs[0:num]
+                remove_ids = [song.id for song in songs]
+            else:
+                songs = songs[pos_index:num]
+                remove_ids = [song.id for song in songs]
+            
+            for id in remove_ids:
+                r.remove_song_from_playlist(self.db, 1, id)
+            await ws_push_playlist_update()
+            return {"message": "Removed songs from your playlist:", "songs": songs}
+        
+        if position and not number:
+            pos_index = self.position_map.get(position) -1
+            r.remove_song_from_playlist(self.db, 1, songs[pos_index].id)
+            await ws_push_playlist_update()
+            return {"message": f"Song {songs[pos_index].title} by {songs[pos_index].artist} removed from your playlist", "song": songs[pos_index]}     
+
+        return {"message": "Did not understand"}
+    
+    async def song_release_date_position(self, entity_values: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
+        position_data = {}
+        for entity_data in entity_values:
+            entity = entity_data['entity']
+            value = entity_data['value']
+            position_data[entity] = value
+
+        position = position_data.get("position")
+        
+        playlist = r.get_playlist(self.db, 1)
+        songs = [song for song in playlist.songs]
+
+        if position:
+            pos_index = self.position_map.get(position) - 1
+            song = songs[pos_index]
+            return {"message": f"{song.title} by {song.artist} was released in {song.year}."} 
+
+        return {"message": "Did not understand"}
+    
+    async def recommend_songs_based_on_playlist(self) -> Optional[Dict[str, Any]]:
+        songs = r.get_recommendations_from_playlist(self.db)
+        recommended_songs = [song.to_dto() for song in songs]
+        return {"message": "Recommendations based on your playlist: ", "songs": recommended_songs}
+
+    async def add_from_recommendations(self, entity_values: List[Dict[str, str]], cache) -> Optional[Dict[str, Any]]:
+        song_data = {}
+        for entity in entity_values:
+            e = entity["entity"]
+            v = entity["value"]
+            song_data[e] = v
+
+        song_ids = []
+    
+        ## User: Add all songs by XXXXX
+        if song_data.get("artist"):
+            for song in cache:
+                if song.artist == song_data.get("artist"):
+                    song_ids.append(song.id)
+
+        ## Add all recommendations
+        else:
+            for song in cache:
+                song_ids.append(song.id)            
+    
+
+        result = await self.add_multiple_songs_to_playlist(song_ids)
+        return result
+
+    async def add_from_recommendations_position(self, entity_values: List[Dict[str, str]], cache) -> Optional[Dict[str, Any]]:
+        position_data = {}
+        for entity in entity_values:
+            e = entity["entity"]
+            v = entity["value"]
+            position_data[e] = v
+        
+        song_ids = []
+
+        position = position_data.get("position")
+        number = position_data.get("number")
+
+        if position and number:
+            pos_index = self.position_map.get(position) - 1
+            number = self.number_map.get(number, number)
+            # Wants to add last(position) two(number) songs
+            if pos_index == -1:
+                cache.reverse()
+                songs = cache[0:number]
+                song_ids = [song.id for song in songs]
+            # Wants to add first(position) two(number) songs
+            else: 
+                songs = cache[pos_index:number]
+                song_ids = [song.id for song in songs]
+                print(song_ids)
+        elif position and not number:
+            # Wants to add the first or second or third song
+            pos_num = self.position_map.get(position)
+            song =  cache[pos_num-1]
+            song_ids.append(song.id)
+            print(song_ids)
+        result = await self.add_multiple_songs_to_playlist(song_ids)
+        return result
+
+    async def add_multiple_songs_to_playlist(self, ids):
+        for id in ids:
+            r.add_song_to_playlist(self.db, 1, id)
+        await ws_push_playlist_update()
+        return {"message": "Added songs"}
 
     def find_song_matches(
         self, 

@@ -1,5 +1,5 @@
 from collections import deque
-from typing import Any, Deque, List, Optional, Union
+from typing import Deque, List, Optional, Union
 import requests
 from requests import Session
 
@@ -37,11 +37,12 @@ class ChatAgent:
         # Extracting the message from the incoming JSON data
         print("Message sent: ", message)
 
-         # Check the add song conversation state
+        if self.conversation_context.add_song.state == AddSongState.song_added:
+            self.conversation_context.add_song.state = AddSongState.default
+
+        # Check the add song conversation state
         if self.conversation_context.add_song.state != AddSongState.default:
             await self.add_song_conversation_continue(message)
-            if self.conversation_context.add_song.state == AddSongState.finished:
-                self.conversation_context.add_song.state = AddSongState.default
             return
 
         message_split = message.split(" ")
@@ -88,28 +89,45 @@ class ChatAgent:
 
         intent = Intents.__members__.get(intent_name)
         print("Intent mapped from Rasa:", intent)
-
-        if confidence > 0.9 and entities:
-            entity_type = entities[0].get("entity")
-            if entity_type:
-                await self.handle_intent(intent, entities)
-                return
+            
+        if self.conversation_context.recommend_playlist.state == RecommendPlaylistState.in_progress:
+            match intent:
+                case Intents.add_all_recommended_songs:
+                    await self.add_recommended_songs(entities)
+                case Intents.add_position_recommended_songs:
+                    await self.add_position_recommended_songs(entities)
+                # case Intents.add_all_except_recommended_songs:
+                #     self.add_all_except_recommended_songs(entities)
+                case _:
+                    pass
+            self.conversation_context.recommend_playlist.state = RecommendPlaylistState.finished
         
-        # Rasa intents that does not need entity: View playlist and clear playlist
-        if confidence > 0.7 and not entities:
-            if intent == Intents.list_songs_in_playlist:
-                self.view_playlist()
-                return
-            if intent == Intents.empty_playlist:
-                await self.clear_playlist_async()
-                return
+        # Reset recommend playlist conversation context
+        if  self.conversation_context.recommend_playlist.state == RecommendPlaylistState.finished:
+            self.conversation_context.recommend_playlist.state = RecommendPlaylistState.default
+            self.conversation_context.recommend_playlist.pending_songs = [] # Probably not needed
+            return
+
+        if confidence > 0.7 and self.conversation_context.recommend_playlist.state == RecommendPlaylistState.default :
+            match intent:
+                case Intents.list_songs_in_playlist:
+                    self.view_playlist()
+                case Intents.empty_playlist:
+                    await self.clear_playlist_async()
+                case Intents.remove_from_playlist_position:
+                    await self.remove_from_playlist_position(entities)
+                case Intents.song_release_date_position:
+                    await self.song_release_date_position(entities)
+                case Intents.recommend_songs_based_on_playlist:
+                    await self.recommend_songs_based_on_playlist()
+                case _:
+                    await self.handle_more_intents(intent, entities)
+            return
 
         self.add_response("I'm sorry, I didn't understand that. (too low confidence score)")
 
 
-    # TODO: replace intent_function map with Intent switch case
-    
-    async def handle_intent(self, intent: Intents, entities: list):
+    async def handle_more_intents(self, intent: Intents, entities: list):
         song_details: SongDetails = extract_rasa_entities(entities)
 
         # Use match-case to map intents to service functions
@@ -134,7 +152,7 @@ class ChatAgent:
             case _:
                 self.add_response("I'm not able to handle your intent at the moment.")
                 return
-        
+
         if result:
             message = result.get("message", "I found the information you requested.")
             self.add_response(message)
@@ -173,12 +191,13 @@ class ChatAgent:
                 self._handle_no_song_matches(title, artist)
 
         else:
-            self.add_response("Please provide the song title and, if possible, the artist of the song you want to add.")
-            
+            self.add_response("I'm not able to process your request at the moment.")
+
 
     async def add_song_conversation_continue(self, message: str) -> None:
+        print("Entering add song continue, state: ", self.conversation_context.add_song.state)
         if message.lower() == "exit":
-            self.conversation_context.add_song.state = AddSongState.finished
+            self.conversation_context.add_song.state = AddSongState.default
             self.add_response("Song addition cancelled.")
             return
 
@@ -201,7 +220,9 @@ class ChatAgent:
                 self.conversation_context.add_song.state = AddSongState.continue_clarification
             elif self.conversation_context.add_song.state != AddSongState.song_added:
                 self.add_response("You can enter 'exit' to cancel.")
-      
+
+            if self.conversation_context.add_song.state == AddSongState.song_added:
+                self.conversation_context.add_song.state = AddSongState.default
 
     async def add_song_async(self, song: SongSchema):
         song_data = {"id": song.id, "title": song.title, "artist": song.artist}
@@ -209,7 +230,6 @@ class ChatAgent:
         song: SongSchema = await self.service.add_song_to_playlist_async(song_data)
         if song:
             self.add_response(f"Song '{song.title}' by '{song.artist}' has been added to your playlist.")
-            self.conversation_context.add_song.state = AddSongState.finished
             self._maybe_send_random_question(song)
   
         else:
@@ -242,16 +262,61 @@ class ChatAgent:
         else:
             self.add_response("I couldn't retrieve the playlist details.")
 
-
     async def clear_playlist_async(self):
         await self.service.clear_playlist_async()
         self.add_response("Playlist cleared.")
+    
+
+    async def remove_from_playlist_position(self, entities):
+        result = await self.service.remove_from_playlist_position(entities)
+        if result:
+            message = result.get("message", "I found the information you requested.")
+            self.add_response(message)
+            songs = result.get("songs")
+            if songs:
+                for song in songs:
+                    self.add_response(f"{song.title} by {song.artist}")
+        else:
+            self.add_response("I couldn't find the information you're looking for.")
+
+
+    async def song_release_date_position(self, entities):
+        result = await self.service.song_release_date_position(entities)
+        if result:
+            message = result.get("message", "I found the information you requested.")
+            self.add_response(message)
+        else:
+            self.add_response("I couldn't find the information you're looking for.")
+
+    
+    async def recommend_songs_based_on_playlist(self):
+        result = await self.service.recommend_songs_based_on_playlist()
+        if result:
+            self.add_response(result.get("message"))
+            songs = result.get("songs")
+            self.conversation_context.recommend_playlist.pending_songs = songs
+            self.conversation_context.recommend_playlist.state = RecommendPlaylistState.in_progress
+            for index, song in enumerate(songs):
+                self.add_response(f"{index+1}: {song.title} by {song.artist}, id: {song.id}")
+
+
+    async def add_recommended_songs(self, entities):
+        result = await self.service.add_from_recommendations(entities, self.conversation_context.recommend_playlist.pending_songs)
+        if result:
+            self.add_response(result.get("message"))
+    
+
+    async def add_position_recommended_songs(self, entities):
+        result = await self.service.add_from_recommendations_position(entities, self.conversation_context.recommend_playlist.pending_songs)
+        if result:
+            self.add_response(result.get("message"))
 
 
     def _maybe_send_random_question(self, song_data: SongSchema) -> None:
         if (random.random() < RANDOM_QUESTION_CHANCE):
             example_question = generate_example_questions(song_data)
             self.add_response(f"Did you know you can ask me questions like: {example_question}")
+
 
     def _handle_no_song_matches(self, title: str, artist: Optional[str]) -> None:
         if not artist:

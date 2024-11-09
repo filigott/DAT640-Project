@@ -192,6 +192,7 @@ nlu:
 
 - intent: add_song_to_playlist
   examples: |
+    - Add the song [Shape of You](song) by [Ed Sheeran](artist)
     - Add [Shape of You](song) to my playlist.
     - Could you add [Bohemian Rhapsody](song) to the playlist?
     - Put [Imagine](song) into my playlist.
@@ -207,7 +208,7 @@ nlu:
     - Put [Imagine](song).
     - Add [Thriller](song) by [Michael Jackson](artist).
     - Include [Bad Guy](song) by [Billie Eilish](artist).
-    - Add the song [Don't Stop Believin'](song) to the playlist.
+    - Add the song [Don't Stop Believin](song) to the playlist.
     - Add the song [dont stop believin](song) to my playlist
     - add [shape of you](song) to my playlist
     - could you add [bohemian rhapsody](song) to the playlist?
@@ -249,50 +250,141 @@ nlu:
 
 - intent: list_songs_in_playlist
   examples: |
-    - Show me the songs in my playlist.
+    - [Show](show_command) me the songs in my playlist.
     - What songs are currently in my playlist?
-    - List all songs in the playlist.
-    - Could you display the playlist for me?
-    - I want to see my playlist.
+    - [List](show_command) all songs in the playlist.
+    - Could you [display] the playlist for me?
+    - I want to [see](show_command) my playlist.
     - Can you tell me what's in my playlist?
-    - Show my playlist.
+    - [Show](show_command) my playlist.
     - What's in my playlist?
-    - List my playlist.
-    - Display playlist.
-    - SHOW ME THE SONGS IN MY PLAYLIST.
-    - WHAT SONGS ARE CURRENTLY IN MY PLAYLIST?
-    - LIST ALL SONGS IN THE PLAYLIST.
-    - COULD YOU DISPLAY THE PLAYLIST FOR ME?
-    - I WANT TO SEE MY PLAYLIST.
-    - CAN YOU TELL ME WHAT'S IN MY PLAYLIST?
-    - SHOW MY PLAYLIST.
-    - WHAT'S IN MY PLAYLIST?
-    - LIST MY PLAYLIST.
+    - [List](show_command) my playlist.
+    - [Display](show_command) playlist.
+    - [View](show_command) playlist
+    - [View](show_command)
+    - [view](show_command)
+    - [View](show_command) the playlist
+    - [View](show_command) my playlist
 
 - intent: empty_playlist
   examples: |
-    - Clear my playlist.
-    - Empty the playlist, please.
-    - Remove all songs from my playlist.
-    - Clear out my playlist.
-    - Delete everything in my playlist.
-    - Wipe playlist.
-    - Empty playlist.
-    - Remove all.
-    - Clear all.
-    - Delete all songs.
-    - CLEAR MY PLAYLIST.
-    - EMPTY THE PLAYLIST, PLEASE.
-    - REMOVE ALL SONGS FROM MY PLAYLIST.
-    - CLEAR OUT MY PLAYLIST.
-    - DELETE EVERYTHING IN MY PLAYLIST.
-    - WIPE PLAYLIST.
-    - EMPTY PLAYLIST.
-    - REMOVE ALL.
-    - CLEAR ALL.
-    - DELETE ALL SONGS.
+    - [Clear](empty_command) my playlist.
+    - [Empty](empty_command) the playlist, please.
+    - [Remove](empty_command) all songs from my playlist.
+    - [Clear](empty_command) out my playlist.
+    - [Delete](empty_command) everything in my playlist.
+    - [Wipe](empty_command) playlist.
+    - [Empty](empty_command) playlist.
+    - [Remove](empty_command) all.
+    - [Clear](empty_command) all.
+    - [Delete](empty_command) all songs.
+
+- intent: remove_from_playlist_position
+  examples: | 
+    - Remove the [first](position) song from the playlist.
+    - Delete the [last](position) [three](number) songs from my playlist.
+    - Take out the [second](position) song.
+    - Clear the [last](position) song on my list.
+    - Remove the [third](position) song from my playlist.
+    - Delete the [first](position) [two](number) songs.
+    - Take out the [last](position) [five](number) songs.
+    - Remove the [second](position) song from my playlist.
+    - Get rid of the [last](position) song on my list.
+    - Remove the [first](position) [three](number) songs.    
+
+
+- intent: song_release_date_position
+  examples: |
+    - Release date of [second](position) song?
+    - Release date of [fourth](position) song
+    - release date of the [third](position) song
+    - When was the [first](position) song released?
+    - When was the [first](position) song in my playlist released?
+    - Tell me the release date of the [last](position) song on my playlist.
+    - What year was the [second](position) song added?
+    - When did the [third](position) song come out?
+    - What is the release date of the [last](position) song?
+    - Can you tell me when the [first](position) song was released?
+    - What year was the [fifth](position) song on the list released?
+    - When did the [second](position) song come out?
+    - Release date of the [third](position) song?
+    - When was the [last](position) song released?
+
+- intent: recommend_songs_based_on_playlist
+  examples: |
+    - Recommend me some songs
+    - Can you recommend me som songs based on what I have?
+    - I want som recommendations bases on the songs I have
+    - Recommend songs based on my playlist.
+    - Can you suggest songs that fit my playlist?
+    - Give me some song recommendations similar to my playlist.
+    - Suggest some tracks that match my current playlist.
+    - Show me songs that go well with my playlist.
+    - What songs would you recommend based on what I have?
+    - Give me recommendations similar to the songs I’ve added.
+    - Find songs that match my playlist vibe.
+    - Can you suggest more songs like those in my playlist?
+    - Recommend some new tracks that fit my playlist style.
+    - Do you have suggestions based on my playlist?
+    - Can you recommend similar songs to what I have?
+    - Suggest music that aligns with my playlist.
+    - Find songs that fit the mood of my playlist.
+    - Give me song suggestions based on my current songs.
+    - Can you find songs that are similar to my playlist?
+    - Recommend new songs that complement my playlist.
+    - Suggest a few tracks that match my music taste in the playlist.
+    - What songs do you think would go well with my playlist?
+    - Find some songs that are in the same genre as my playlist.
+    - Show me recommendations that match my playlist vibe.
+    - What would you add to my playlist based on the current songs?
+
+- intent: add_all_recommended_songs
+  examples: |
+    - Add all the songs
+    - Add all recommendations
+    - Add all the recommended songs
+    - Add every recommended track
+    - Add all suggestions
+    - Add all the music you recommended
+    - Add all by [Ed Sheeran](artist)
+    - Add all by [Taylor Swift](artist)
+    - Add all songs from the album [Divide](album)
+    - Add all tracks from the album [1989](album)
+    - Add all songs by [Drake](artist)
+
+- intent: add_position_recommended_songs
+  examples: |
+    - Add the [first](position) [two](number)
+    - Add the [first](position) [three](number) songs
+    - Add the [third](position) song
+    - Add the [second](position) and [fourth](position) songs
+    - Add the [first](position) song from the list
+    - Add the [last](position) [two](number)
+    - Add the [last](position) [three](number) songs
+    - Add the [last](position) song
+    - Add song number [1](position)
+    - Add the [fifth](position) song
+    - Add song number [3](position)
+    - Add the [second](position) song
+
+
+- intent: add_all_except_recommended_songs
+  examples: |
+    - Add all except the one by [Ed Sheeran](artist)
+    - Add every song except the songs by [Ed Sheeran](artist)
+    - Add all except the song [Shape of You](song)
+    - Add all except the songs by [Taylor Swift](artist)
+    - Add all except the song [Bad Habits](song)
+    - Add every song except the one by [Adele](artist)
+    - Add everything except the songs by [Drake](artist)
+    - Add all except the songs from the album [Divide](album)
+    - Add all except the tracks from the album [1989](album)
 
 entities:
 - song
 - artist
 - album
+- position
+- number
+- show_command
+- clear_command
