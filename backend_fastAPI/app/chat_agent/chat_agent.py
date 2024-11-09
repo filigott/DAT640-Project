@@ -37,11 +37,12 @@ class ChatAgent:
         # Extracting the message from the incoming JSON data
         print("Message sent: ", message)
 
+        if self.conversation_context.add_song.state == AddSongState.song_added:
+            self.conversation_context.add_song.state = AddSongState.default
+
         # Check the add song conversation state
         if self.conversation_context.add_song.state != AddSongState.default:
             await self.add_song_conversation_continue(message)
-            if self.conversation_context.add_song.state == AddSongState.finished:
-                self.conversation_context.add_song.state = AddSongState.default
             return
 
         message_split = message.split(" ")
@@ -107,7 +108,7 @@ class ChatAgent:
             self.conversation_context.recommend_playlist.pending_songs = [] # Probably not needed
             return
 
-        if confidence > 0.5 and self.conversation_context.recommend_playlist.state == RecommendPlaylistState.default :
+        if confidence > 0.7 and self.conversation_context.recommend_playlist.state == RecommendPlaylistState.default :
             match intent:
                 case Intents.list_songs_in_playlist:
                     self.view_playlist()
@@ -194,8 +195,9 @@ class ChatAgent:
 
 
     async def add_song_conversation_continue(self, message: str) -> None:
+        print("Entering add song continue, state: ", self.conversation_context.add_song.state)
         if message.lower() == "exit":
-            self.conversation_context.add_song.state = AddSongState.finished
+            self.conversation_context.add_song.state = AddSongState.default
             self.add_response("Song addition cancelled.")
             return
 
@@ -218,7 +220,9 @@ class ChatAgent:
                 self.conversation_context.add_song.state = AddSongState.continue_clarification
             elif self.conversation_context.add_song.state != AddSongState.song_added:
                 self.add_response("You can enter 'exit' to cancel.")
-      
+
+            if self.conversation_context.add_song.state == AddSongState.song_added:
+                self.conversation_context.add_song.state = AddSongState.default
 
     async def add_song_async(self, song: SongSchema):
         song_data = {"id": song.id, "title": song.title, "artist": song.artist}
@@ -226,7 +230,6 @@ class ChatAgent:
         song: SongSchema = await self.service.add_song_to_playlist_async(song_data)
         if song:
             self.add_response(f"Song '{song.title}' by '{song.artist}' has been added to your playlist.")
-            self.conversation_context.add_song.state = AddSongState.finished
             self._maybe_send_random_question(song)
   
         else:

@@ -58,7 +58,6 @@ class AddSongState(Enum):
     waiting_for_clarification = auto()
     continue_clarification = auto()
     song_added = auto()
-    finished = auto()
 
 class RecommendPlaylistState(Enum):
     default = 0

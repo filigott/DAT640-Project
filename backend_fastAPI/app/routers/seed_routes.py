@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from ..init_db import seed_db_demo, seed_db_dataset_sqlite
 from ..database import get_db
+from ..rasa_data import save_data_to_disk
 
 router = APIRouter()
 
@@ -35,3 +36,7 @@ def seed_database_dataset(db: Session = Depends(get_db)):
         return {"message": "Database seeded successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/seed/rasa-data")
+def seed_rasa_data(db: Session = Depends(get_db)):
+    save_data_to_disk(db)
