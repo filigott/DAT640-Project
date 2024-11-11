@@ -2,7 +2,6 @@ import random
 from typing import Optional, List
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
-from unidecode import unidecode
 from rapidfuzz import process
 
 from app.init_db import seed_db_demo
@@ -10,7 +9,7 @@ from app.utils import advanced_normalize_text
 from ..models import PlaylistModel, SongModel
 
 MAX_NUM_SONGS_SEARCH = 10
-RAPIDFUZZ_SCORE_CUTOFF = 80
+RAPIDFUZZ_SCORE_CUTOFF = 70
 
 def demo_seed_database(db: Session):
     seed_db_demo(db)

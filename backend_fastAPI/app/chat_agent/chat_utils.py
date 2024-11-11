@@ -13,12 +13,15 @@ RANDOM_QUESTION_CHANCE = 0.5
 MAX_NUM_SONGS = 5
 
 class IntentType(Enum):
-    SONG = "song"
-    ARTIST = "artist"
-    ALBUM = "album"
+    song = "song"
+    artist = "artist"
+    album = "album"
 
 class Intents(Enum):
-    ask_song_release_date = 0
+    greet = 0
+    learn_about_system = auto()
+
+    ask_song_release_date = auto()
     ask_songs_of_artist = auto()
     ask_artist_of_song = auto()
     ask_album_release_date = auto()
@@ -40,7 +43,8 @@ class Intents(Enum):
 
 
 class Commands(Enum):
-    hello = "/hello"
+    greet = "/greet"
+    learn = "/learn"
     exit = "/exit"
     parrot = "/parrot"
     seed = "/seed"
@@ -92,7 +96,7 @@ def generate_example_questions(song: SongSchema):
     questions = {
         Intents.ask_song_release_date: f"When was the song '{song.title}' released?",
         Intents.ask_songs_of_artist: f"What songs does '{song.artist}' have?",
-        Intents.ask_album_of_song: f"Which album is the song '{song.album}' from?",
+        Intents.ask_album_of_song: f"Which album is the song '{song.title}' from?",
     }
     return random.choice(list(questions.values()))
 
@@ -128,15 +132,15 @@ def parse_add_song_input(input_text):
     # Return the extracted artist and title, or just title if artist is not provided
     return title.strip(), (artist.strip() if artist else None)
 
-def extract_rasa_entities(entities: List[Dict[str, str]]) -> SongDetails:
+def extract_rasa_song_details(entities: List[Dict[str, str]]) -> SongDetails:
     song_details = SongDetails()
     for entity in entities:
         entity_type = entity['entity']
         value = entity['value']
-        if entity_type == IntentType.SONG.value:
+        if entity_type == IntentType.song.value:
             song_details.title = value
-        elif entity_type == IntentType.ARTIST.value:
+        elif entity_type == IntentType.artist.value:
             song_details.artist = value
-        elif entity_type == IntentType.ALBUM.value:
+        elif entity_type == IntentType.album.value:
             song_details.album = value
     return song_details

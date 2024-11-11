@@ -1,372 +1,372 @@
-version: "3.0"
+version: "3.1"
 nlu:
+- intent: greet
+  examples: |
+    - Hello
+    - Hi
+    - Hey
+    - Good morning
+    - Good afternoon
+    - Good evening
+    - Hi there
+    - Greetings
+    - What's up?
+    - Howdy
+    - Hey there
+    - Morning
+    - Evening
+    - Welcome
+    - Nice to meet you
+    - Pleasure to meet you
+    - How are you doing?
+    - Good day
+    - Hello there
+    - Hi friend
+
+- intent: learn_about_system
+  examples: |
+    - What can you do?
+    - Tell me about yourself
+    - What are your capabilities?
+    - What are you able to do?
+    - How can you help me?
+    - What can I ask you?
+    - What is this chatbot for?
+    - What are your features?
+    - How do you work?
+    - What services do you provide?
+    - I'd like to know what you can help with
+    - Explain your functionality
+    - Show me what you're capable of
+    - Give me an overview of your features
+    - What kind of assistance can you offer?
+    - Help me understand what you do
+    - Can you list your functions?
+    - What tasks can you perform?
+    - Describe what you're good at
+    - Tell me about your abilities
+
 - intent: ask_song_release_date
   examples: |
-    - When was the song [Shape of You](song) released?
-    - Can you tell me the release date of [Bohemian Rhapsody](song)?
-    - What is the release year of the song [Imagine](song)?
-    - I want to know when the song [Thriller](song) came out.
-    - What year did [Billie Jean](song) release?
-    - Do you know the release date of [Smells Like Teen Spirit](song)?
-    - Tell me when [Yesterday](song) was released.
-    - When did the song [Wonderwall](song) come out?
-    - What year was [Like a Rolling Stone](song) released?
-    - Can you tell me the year [Purple Haze](song) was released?
-    - Do you know the release year of the song [Bad Guy](song)?
-    - When did [Sweet Child O' Mine](song) get released?
-    - What is the release date for the track [Uptown Funk](song)?
-    - when was the song [shape of you](song) released?
-    - can you tell me the release date of [bohemian rhapsody](song)?
-    - what is the release year of the song [imagine](song)?
-    - i want to know when the song [thriller](song) came out.
-    - what year did [billie jean](song) release?
-    - do you know the release date of [smells like teen spirit](song)?
-    - tell me when [yesterday](song) was released.
-    - when did the song [wonderwall](song) come out?
-    - what year was [like a rolling stone](song) released?
-    - can you tell me the year [purple haze](song) was released?
-    - do you know the release year of the song [bad guy](song)?
-    - when did [sweet child o' mine](song) get released?
-    - what is the release date for the track [uptown funk](song)?
-    - WHEN WAS THE SONG [SHAPE OF YOU](song) RELEASED?
-    - CAN YOU TELL ME THE RELEASE DATE OF [BOHEMIAN RHAPSODY](song)?
-    - WHAT IS THE RELEASE YEAR OF THE SONG [IMAGINE](song)?
-    - I WANT TO KNOW WHEN THE SONG [THRILLER](song) CAME OUT.
-    - WHAT YEAR DID [BILLIE JEAN](song) RELEASE?
-    - DO YOU KNOW THE RELEASE DATE OF [SMELLS LIKE TEEN SPIRIT](song)?
+    - When was [Shape of You](song) released?
+    - What's the release date for [Bohemian Rhapsody](song)?
+    - In which year did [Imagine](song) come out?
+    - When did they release [Thriller](song)?
+    - What year was [Billie Jean](song) released?
+    - Release date of [Smells Like Teen Spirit](song)?
+    - Tell me when [Yesterday](song) came out
+    - Which year was [Wonderwall](song) released in?
+    - Do you know when [Like a Rolling Stone](song) was released?
+    - What year did they put out [Purple Haze](song)?
+    - When did [All of Me](song) first come out?
+    - What's the original release date of [Lose Yourself](song)?
+    - Can you tell me which year [bad guy](song) was released?
+    - I need to know when [hotel california](song) came out
+    - What year did they drop [Sweet Child O' Mine](song)?
+    - When was [Stairway to Heaven](song) first released?
+    - In what year was [Umbrella](song) released?
+    - Tell me the release year of [Hey Jude](song)
+    - When did [Rolling in the Deep](song) come out?
+    - What's the release date of [Uptown Funk](song)?
 
 - intent: ask_songs_of_artist
   examples: |
-    - What songs does [Ed Sheeran](artist) have?
-    - List the songs by [Queen](artist).
-    - Can you show me the songs of [Adele](artist)?
-    - I want to know all the songs by [The Beatles](artist).
-    - Give me a list of songs by [Eminem](artist).
-    - Do you know the songs performed by [Michael Jackson](artist)?
-    - What tracks are there from [Taylor Swift](artist)?
-    - Tell me the songs by [Elvis Presley](artist).
-    - Can you name some songs by [Bob Dylan](artist)?
-    - I’m looking for songs by [The Rolling Stones](artist).
-    - What are the top hits from [Lady Gaga](artist)?
-    - Which tracks did [Bruno Mars](artist) sing?
-    - Show me songs sung by [Kanye West](artist).
-    - what songs does [ed sheeran](artist) have?
-    - list the songs by [queen](artist).
-    - can you show me the songs of [adele](artist)?
-    - i want to know all the songs by [the beatles](artist).
-    - give me a list of songs by [eminem](artist).
-    - do you know the songs performed by [michael jackson](artist)?
-    - what tracks are there from [taylor swift](artist)?
-    - tell me the songs by [elvis presley](artist).
-    - can you name some songs by [bob dylan](artist)?
-    - i’m looking for songs by [the rolling stones](artist).
-    - what are the top hits from [lady gaga](artist)?
-    - which tracks did [bruno mars](artist) sing?
-    - show me songs sung by [kanye west](artist).
-    - WHAT SONGS DOES [ED SHEERAN](artist) HAVE?
-    - LIST THE SONGS BY [QUEEN](artist).
-    - CAN YOU SHOW ME THE SONGS OF [ADELE](artist)?
+    - What songs has [Ed Sheeran](artist) released?
+    - Show me all songs by [Queen](artist)
+    - List [Adele](artist)'s songs
+    - What has [The Beatles](artist) recorded?
+    - Tell me the songs [Eminem](artist) has made
+    - What music did [Michael Jackson](artist) create?
+    - Show me [Taylor Swift](artist)'s discography
+    - What songs belong to [Elvis Presley](artist)?
+    - List everything by [Bob Dylan](artist)
+    - What tracks do [The Rolling Stones](artist) have?
+    - Show me what [Beyoncé](artist) has sung
+    - What's in [Coldplay](artist)'s catalog?
+    - List all [Drake](artist)'s tracks
+    - What has [Lady Gaga](artist) released?
+    - Show me the works of [Pink Floyd](artist)
+    - What songs are credited to [The Eagles](artist)?
+    - Tell me about [Metallica](artist)'s songs
+    - What has [Bruno Mars](artist) produced?
+    - List [Justin Bieber](artist)'s releases
+    - Show me [Rihanna](artist)'s songs
 
 - intent: ask_artist_of_song
   examples: |
-    - Who has released the song [Shape of You](song)?
-    - Who has released [Shape of You]?
-    - Who released the song [Imagine](song)?
-    - Who released [Hotel California](song)?
-    - Who sings [Shape of You](song)?
-    - Tell me the artist of the song [Imagine](song).
-    - Who is the singer of [Stairway to Heaven](song)?
-    - Do you know the artist who performs [Hey Jude](song)?
-    - I want to know who sings [Hotel California](song).
-    - Who performed the song [Purple Rain](song)?
-    - Who's the artist behind [Billie Jean](song)?
-    - Can you tell me who sings [Rolling in the Deep](song)?
-    - Which artist is known for the song [Smells Like Teen Spirit](song)?
-    - Who's the musician for [Lose Yourself](song)?
-    - Which singer sang [Hallelujah](song)?
-    - Do you know who the singer of [Poker Face](song) is?
-    - What artist is associated with [Bohemian Rhapsody](song)?
-    - who sings [shape of you](song)?
-    - tell me the artist of the song [imagine](song).
-    - who is the singer of [stairway to heaven](song)?
-    - do you know the artist who performs [hey jude](song)?
-    - i want to know who sings [hotel california](song).
-    - who performed the song [purple rain](song)?
-    - who's the artist behind [billie jean](song)?
-    - can you tell me who sings [rolling in the deep](song)?
-    - which artist is known for the song [smells like teen spirit](song)?
-    - who's the musician for [lose yourself](song)?
-    - which singer sang [hallelujah](song)?
-    - do you know who the singer of [poker face](song) is?
-    - WHAT ARTIST IS ASSOCIATED WITH [BOHEMIAN RHAPSODY](song)?
+    - Who performs [Shape of You](song)?
+    - Which artist created [Imagine](song)?
+    - Who's the original artist of [Hotel California](song)?
+    - Who wrote and performed [Stairway to Heaven](song)?
+    - Which band plays [Hey Jude](song)?
+    - Tell me who recorded [Purple Rain](song)
+    - Who's behind [Bohemian Rhapsody](song)?
+    - Which artist sings [Rolling in the Deep](song)?
+    - Who's the original performer of [bad guy](song)?
+    - Tell me who made [Sweet Child O' Mine](song)
+    - Which group recorded [Back in Black](song)?
+    - Who's responsible for [Wonderwall](song)?
+    - Tell me the original artist of [Yesterday](song)
+    - Who created [Smells Like Teen Spirit](song)?
+    - Who performed [Uptown Funk](song)?
+    - Which artist made [Shake It Off](song)?
+    - Who's the singer of [Someone Like You](song)?
+    - Tell me who sang [Billie Jean](song)
+    - Which band created [Yellow](song)?
+    - Who wrote [All of Me](song)?
 
 - intent: ask_album_release_date
   examples: |
-    - When was the album [Abbey Road](album) released?
-    - What is the release date of [21](album)?
-    - Tell me when the album [The Dark Side of the Moon](album) came out.
-    - Can you tell me the release year of [Thriller](album)?
-    - What year did the album [Back to Black](album) release?
-    - Do you know the release date of [Nevermind](album)?
-    - When did the album [The Wall](album) get released?
-    - What year was [Born to Run](album) released?
-    - Tell me the release year for the album [A Night at the Opera](album).
-    - When did [1989](album) come out?
-    - What year was the album [Hotel California](album) launched?
-    - Can you tell me the release date for [Goodbye Yellow Brick Road](album)?
-    - When was the album [OK Computer](album) first released?
-    - when was the album [abbey road](album) released?
-    - what is the release date of [21](album)?
-    - tell me when the album [the dark side of the moon](album) came out.
-    - can you tell me the release year of [thriller](album)?
-    - what year did the album [back to black](album) release?
-    - do you know the release date of [nevermind](album)?
-    - when did the album [the wall](album) get released?
-    - what year was [born to run](album) released?
-    - tell me the release year for the album [a night at the opera](album).
-    - when did [1989](album) come out?
-    - what year was the album [hotel california](album) launched?
-    - can you tell me the release date for [goodbye yellow brick road](album)?
-    - WHEN WAS THE ALBUM [OK COMPUTER](album) FIRST RELEASED?
+    - When did [Abbey Road](album) come out?
+    - What year was [21](album) released?
+    - When did they release [The Dark Side of the Moon](album)?
+    - What's the release date of [Thriller](album)?
+    - When was [Back to Black](album) put out?
+    - Release date for [Nevermind](album)?
+    - When did [The Wall](album) drop?
+    - Which year was [Born to Run](album) released?
+    - What year did [A Night at the Opera](album) come out?
+    - When was [1989](album) released?
+    - Release year for [Lover](album)?
+    - When did they put out [The Fame](album)?
+    - What year did [the wall](album) come out?
+    - When was [Rumours](album) released?
+    - Which year did they release [Purple Rain](album)?
+    - Tell me when [Born This Way](album) came out
+    - What year was [X](album) released?
+    - When did [Recovery](album) drop?
+    - Release date of [Red](album)?
+    - When was [Lemonade](album) released?
 
 - intent: ask_album_of_song
   examples: |
-    - Which album is the song [Shape of You](song) from?
-    - What album does the song [Imagine](song) belong to?
-    - Can you tell me the album of the song [Let it Be](song)?
-    - I want to know the album of [Billie Jean](song).
-    - What is the album that includes [Hey Jude](song)?
-    - Which album features the track [Like a Prayer](song)?
-    - Do you know what album [Smells Like Teen Spirit](song) is in?
-    - Tell me the album that has [Sweet Child O' Mine](song).
-    - Which album includes the song [Rolling in the Deep](song)?
-    - Can you tell me the album of [Stairway to Heaven](song)?
-    - What album is [Back in Black](song) a part of?
-    - Which album has the track [Bohemian Rhapsody](song)?
-    - Where can I find the song [Purple Rain](song)?
-    - which album is the song [shape of you](song) from?
-    - what album does the song [imagine](song) belong to?
-    - can you tell me the album of the song [let it be](song)?
-    - i want to know the album of [billie jean](song).
-    - what is the album that includes [hey jude](song)?
-    - which album features the track [like a prayer](song)?
-    - do you know what album [smells like teen spirit](song) is in?
-    - tell me the album that has [sweet child o' mine](song).
-    - which album includes the song [rolling in the deep](song)?
-    - can you tell me the album of [stairway to heaven](song)?
-    - what album is [back in black](song) a part of?
-    - which album has the track [bohemian rhapsody](song)?
-    - WHERE CAN I FIND THE SONG [PURPLE RAIN](song)?
-
-- intent: ask_albums_of_artist
-  examples: |
-    - What albums does [Pink Floyd](artist) have?
-    - Can you list the albums of [Adele](artist)?
-    - Tell me the albums by [Led Zeppelin](artist).
-    - I want to know the albums released by [The Rolling Stones](artist).
-    - Give me a list of albums by [Beyoncé](artist).
-    - What records has [Elton John](artist) released?
-    - Name the albums from [Radiohead](artist).
-    - Can you show me all the albums by [Taylor Swift](artist)?
-    - What are the albums put out by [Bob Marley](artist)?
-    - Tell me the discography of [Metallica](artist).
-    - Which albums did [Nirvana](artist) release?
-    - List all the albums recorded by [Bruce Springsteen](artist).
-    - Do you know the albums from [Frank Sinatra](artist)?
-    - what albums does [pink floyd](artist) have?
-    - can you list the albums of [adele](artist)?
-    - tell me the albums by [led zeppelin](artist).
-    - i want to know the albums released by [the rolling stones](artist).
-    - give me a list of albums by [beyoncé](artist).
-    - what records has [elton john](artist) released?
-    - name the albums from [radiohead](artist).
-    - can you show me all the albums by [taylor swift](artist)?
-    - what are the albums put out by [bob marley](artist)?
-    - tell me the discography of [metallica](artist).
-    - which albums did [nirvana](artist) release?
-    - list all the albums recorded by [bruce springsteen](artist).
-    - do you know the albums from [frank sinatra](artist)?
-    - WHAT ALBUMS DOES [PINK FLOYD](artist) HAVE?
-    - CAN YOU LIST THE ALBUMS OF [ADELE](artist)?
-    - TELL ME THE ALBUMS BY [LED ZEPPELIN](artist)?
+    - What album contains [Shape of You](song)?
+    - Which album is [Imagine](song) from?
+    - What album features [Let it Be](song)?
+    - Which album has [Billie Jean](song) on it?
+    - What album includes [Hey Jude](song)?
+    - Which record contains [Like a Prayer](song)?
+    - What album is [Smells Like Teen Spirit](song) on?
+    - Which album features [Sweet Child O' Mine](song)?
+    - What record has [Rolling in the Deep](song)?
+    - Which album contains [Stairway to Heaven](song)?
+    - What album features [Bohemian Rhapsody](song)?
+    - Which record includes [Yesterday](song)?
+    - What album has [bad guy](song)?
+    - Which album contains [hotel california](song)?
+    - What record features [Shake It Off](song)?
+    - Which album is [Uptown Funk](song) from?
+    - What album includes [Someone Like You](song)?
+    - Which record has [Yellow](song) on it?
+    - What album contains [All of Me](song)?
+    - Which album features [Wonderwall](song)?
 
 - intent: add_song_to_playlist
   examples: |
-    - Add the song [Shape of You](song) by [Ed Sheeran](artist)
-    - Add [Shape of You](song) to my playlist.
-    - Could you add [Bohemian Rhapsody](song) to the playlist?
-    - Put [Imagine](song) into my playlist.
-    - I want to add [Thriller](song) to my playlist.
-    - Can you include [Bad Guy](song) in my playlist?
-    - Add the song [Shape of You](song) by [Ed Sheeran](artist) from the album [Divide](album).
-    - Please add [Bohemian Rhapsody](song) by [Queen](artist) to the playlist.
-    - Include [Thriller](song) by [Michael Jackson](artist).
-    - Put [Wonderwall](song) by [Oasis](artist) in my playlist.
-    - Add [Uptown Funk](song) by [Mark Ronson](artist).
-    - Add [Shape of You](song).
-    - Include [Bohemian Rhapsody](song).
-    - Put [Imagine](song).
-    - Add [Thriller](song) by [Michael Jackson](artist).
-    - Include [Bad Guy](song) by [Billie Eilish](artist).
-    - Add the song [Don't Stop Believin](song) to the playlist.
-    - Add the song [dont stop believin](song) to my playlist
-    - add [shape of you](song) to my playlist
-    - could you add [bohemian rhapsody](song) to the playlist?
-    - put [imagine](song) into my playlist.
-    - i want to add [thriller](song) to my playlist.
-    - can you include [bad guy](song) in my playlist?
-    - add [shape of you](song) by [ed sheeran](artist) to my playlist.
-    - please add [bohemian rhapsody](song) by [queen](artist) to the playlist.
-    - include [thriller](song) by [michael jackson](artist).
-    - PUT [IMAGINE](song) INTO MY PLAYLIST.
+    - Add the song [Shape of You](song) to my playlist
+    - Put [Bohemian Rhapsody](song) in my playlist
+    - Include [Imagine](song) in the playlist
+    - Add the song [Thriller](song) by [Michael Jackson](artist) to my playlist
+    - Put [Bad Guy](song) by [Billie Eilish](artist) in
+    - Include [Shape of You](song) from [Divide](album)
+    - Add [Wonderwall](song) by [Oasis](artist)
+    - Put [Blinding Lights](song) in my playlist
+    - Include [bad guy](song) by [billie eilish](artist)
+    - Add [hotel california](song) to the playlist
+    - Put [Sweet Child O' Mine](song) in
+    - Add [Stairway to Heaven](song) to my list
+    - Include [Yesterday](song) by [The Beatles](artist)
+    - Put [Purple Rain](song) from [Purple Rain](album) in
+    - Add [Uptown Funk](song) by [Bruno Mars](artist)
+    - Include [Shake It Off](song) to my playlist
+    - Put [Someone Like You](song) in my list
+    - Add the song [Yellow](song) by [Coldplay](artist)
+    - Include [All of Me](song) from [Love in the Future](album)
+    - Put [Rolling in the Deep](song) in my playlist
 
 - intent: remove_song_from_playlist
   examples: |
-    - Remove [Shape of You](song) from my playlist.
-    - Could you delete [Bohemian Rhapsody](song) from the playlist?
-    - Take [Imagine](song) out of my playlist.
-    - I want to remove [Thriller](song) from my playlist.
-    - Can you take [Bad Guy](song) off my playlist?
-    - Remove the song [Hey Jude](song) from my playlist.
-    - Please delete [Smells Like Teen Spirit](song) from the playlist.
-    - Remove [Sweet Child O' Mine](song) by [Guns N' Roses](artist) from my playlist.
-    - Take out [Wonderwall](song) by [Oasis](artist).
-    - Delete [Shape of You](song) by [Ed Sheeran](artist).
-    - Remove [Imagine](song).
-    - Delete [Bohemian Rhapsody](song).
-    - Take out [Thriller](song).
-    - Remove [Bad Guy](song) by [Billie Eilish](artist).
-    - Delete [Purple Haze](song) by [Jimi Hendrix](artist).
-    - REMOVE [SHAPE OF YOU](song) FROM MY PLAYLIST.
-    - could you delete [bohemian rhapsody](song) from the playlist?
-    - take [imagine](song) out of my playlist.
-    - i want to remove [thriller](song) from my playlist.
-    - can you take [bad guy](song) off my playlist?
-    - remove the song [hey jude](song) from my playlist.
-    - please delete [smells like teen spirit](song) from the playlist.
-    - remove [sweet child o' mine](song) by [guns n' roses](artist) from my playlist.
-    - take out [wonderwall](song) by [oasis](artist).
-    - DELETE [SHAPE OF YOU](song) BY [ED SHEERAN](artist).
+    - Take [Shape of You](song) off my playlist
+    - Remove [Bohemian Rhapsody](song)
+    - Delete [Imagine](song) from the playlist
+    - Take off [Thriller](song)
+    - Remove [Bad Guy](song) by [Billie Eilish](artist)
+    - Delete [Hey Jude](song) from my list
+    - Take [Smells Like Teen Spirit](song) off
+    - Remove [Sweet Child O' Mine](song) by [Guns N' Roses](artist)
+    - Delete [Wonderwall](song)
+    - Take off [bad guy](song)
+    - Remove [hotel california](song) by [eagles](artist)
+    - Delete [Purple Rain](song) from the playlist
+    - Take [Yesterday](song) off my list
+    - Remove [Stairway to Heaven](song) by [Led Zeppelin](artist)
+    - Delete [Uptown Funk](song) by [Bruno Mars](artist)
+    - Take [Shake It Off](song) off
+    - Remove [Someone Like You](song) from my playlist
+    - Delete [Yellow](song) by [Coldplay](artist)
+    - Take [All of Me](song) off my list
+    - Remove [Rolling in the Deep](song)
 
 - intent: list_songs_in_playlist
   examples: |
-    - [Show](show_command) me the songs in my playlist.
-    - What songs are currently in my playlist?
-    - [List](show_command) all songs in the playlist.
-    - Could you [display] the playlist for me?
-    - I want to [see](show_command) my playlist.
-    - Can you tell me what's in my playlist?
-    - [Show](show_command) my playlist.
-    - What's in my playlist?
-    - [List](show_command) my playlist.
-    - [Display](show_command) playlist.
-    - [View](show_command) playlist
-    - [View](show_command)
-    - [view](show_command)
-    - [View](show_command) the playlist
-    - [View](show_command) my playlist
+    - [Show](show_command) my playlist
+    - [List](show_command) what's in my playlist
+    - [Display](show_command) my songs
+    - What's in my playlist right now?
+    - Can you [show](show_command) my playlist?
+    - [List](show_command) everything in my playlist
+    - [Display](show_command) all my songs
+    - What songs do I have?
+    - [Show](show_command) me what I've added
+    - [List](show_command) my music
+    - Can you [display](show_command) what I have?
+    - [Show](show_command) my current playlist
+    - What's on my list?
+    - [List](show_command) my tracks
+    - [Display](show_command) what I'm listening to
+    - What music is in my playlist?
+    - Can you tell me what songs I have?
+    - [Show](show_command) all my music
+    - [List](show_command) my entire playlist
+    - What's in my collection?
 
 - intent: empty_playlist
   examples: |
-    - [Clear](empty_command) my playlist.
-    - [Empty](empty_command) the playlist, please.
-    - [Remove](empty_command) all songs from my playlist.
-    - [Clear](empty_command) out my playlist.
-    - [Delete](empty_command) everything in my playlist.
-    - [Wipe](empty_command) playlist.
-    - [Empty](empty_command) playlist.
-    - [Remove](empty_command) all.
-    - [Clear](empty_command) all.
-    - [Delete](empty_command) all songs.
+    - [Clear](empty_command) my playlist
+    - [Empty](empty_command) everything
+    - [Remove](empty_command) all songs
+    - [Clear](empty_command) out everything
+    - [Delete](empty_command) my entire playlist
+    - [Wipe](empty_command) all songs
+    - [Empty](empty_command) my whole playlist
+    - [Remove](empty_command) everything
+    - [Clear](empty_command) all songs
+    - [Delete](empty_command) everything
+    - [Wipe](empty_command) my playlist clean
+    - [Empty](empty_command) my list
+    - [Remove](empty_command) all my songs
+    - [Clear](empty_command) my entire collection
+    - [Delete](empty_command) my whole library
+    - [Wipe](empty_command) everything clean
+    - [Empty](empty_command) out my entire playlist
+    - [Remove](empty_command) all tracks
+    - [Clear](empty_command) my music collection
+    - [Delete](empty_command) all my music
 
 - intent: remove_from_playlist_position
-  examples: | 
-    - Remove the [first](position) song from the playlist.
-    - Delete the [last](position) [three](number) songs from my playlist.
-    - Take out the [second](position) song.
-    - Clear the [last](position) song on my list.
-    - Remove the [third](position) song from my playlist.
-    - Delete the [first](position) [two](number) songs.
-    - Take out the [last](position) [five](number) songs.
-    - Remove the [second](position) song from my playlist.
-    - Get rid of the [last](position) song on my list.
-    - Remove the [first](position) [three](number) songs.    
-
+  examples: |
+    - Remove the [first](position) song
+    - Delete the [last](position) [three](number) songs
+    - Take out song number [two](position)
+    - Remove the [last](position) track
+    - Delete the [third](position) song
+    - Take out the [first](position) [two](number) tracks
+    - Remove the [last](position) [five](number) songs
+    - Delete number [four](position)
+    - Take out the [second](position) track
+    - Remove the [fifth](position) song
+    - Delete the [first](position) [three](number) tracks
+    - Take out the [last](position) [four](number) songs
+    - Remove song number [three](position)
+    - Delete track [five](position)
+    - Take out the [fourth](position) one
+    - Remove the [second](position) from the top
+    - Delete the [last](position) [two](number) tracks
+    - Take out number [one](position)
+    - Remove the [third](position) from the list
+    - Delete the [fifth](position) track
 
 - intent: song_release_date_position
   examples: |
-    - Release date of [second](position) song?
-    - Release date of [fourth](position) song
-    - release date of the [third](position) song
-    - When was the [first](position) song released?
-    - When was the [first](position) song in my playlist released?
-    - Tell me the release date of the [last](position) song on my playlist.
-    - What year was the [second](position) song added?
+    - When was the [second](position) song released?
+    - Release date of [fourth](position) track?
     - When did the [third](position) song come out?
-    - What is the release date of the [last](position) song?
-    - Can you tell me when the [first](position) song was released?
-    - What year was the [fifth](position) song on the list released?
-    - When did the [second](position) song come out?
-    - Release date of the [third](position) song?
-    - When was the [last](position) song released?
+    - What year is the [first](position) song from?
+    - Release year of the [last](position) track?
+    - When was number [two](position) released?
+    - What's the release date of the [fifth](position) song?
+    - When did the [last](position) track come out?
+    - Release year of number [three](position)?
+    - When was the [fourth](position) one released?
+    - What year is number [five](position) from?
+    - Release date of the [first](position) track?
+    - When did song number [two](position) come out?
+    - What year is the [third](position) from?
+    - Release date of track [four](position)?
+    - When was the [last](position) one put out?
+    - What year is the [fifth](position) track from?
+    - When did number [one](position) release?
+    - Release year of the [second](position) song?
+    - When was track [three](position) published?
 
 - intent: recommend_songs_based_on_playlist
   examples: |
-    - Recommend me some songs
-    - Can you recommend me som songs based on what I have?
-    - I want som recommendations bases on the songs I have
+    - Recommend me some songs.
+    - Can you recommend me some songs based on what I have?
+    - I want some recommendations based on the songs I have.
     - Recommend songs based on my playlist.
     - Can you suggest songs that fit my playlist?
     - Give me some song recommendations similar to my playlist.
     - Suggest some tracks that match my current playlist.
     - Show me songs that go well with my playlist.
-    - What songs would you recommend based on what I have?
-    - Give me recommendations similar to the songs I’ve added.
-    - Find songs that match my playlist vibe.
-    - Can you suggest more songs like those in my playlist?
-    - Recommend some new tracks that fit my playlist style.
-    - Do you have suggestions based on my playlist?
-    - Can you recommend similar songs to what I have?
-    - Suggest music that aligns with my playlist.
-    - Find songs that fit the mood of my playlist.
-    - Give me song suggestions based on my current songs.
-    - Can you find songs that are similar to my playlist?
-    - Recommend new songs that complement my playlist.
-    - Suggest a few tracks that match my music taste in the playlist.
-    - What songs do you think would go well with my playlist?
-    - Find some songs that are in the same genre as my playlist.
-    - Show me recommendations that match my playlist vibe.
-    - What would you add to my playlist based on the current songs?
+    - What songs would you recommend?
+    - Recommend similar songs.
+    - Give me some song recommendations.
+    - What are some songs that match my playlist?
+    - Can you recommend tracks based on my playlist?
+    - Suggest songs that might fit my playlist.
+    - Do you have any song suggestions for my playlist?
+    - Which songs would go well with what I have?
+    - Could you suggest some similar songs?
+    - Suggest songs I might like.
+    - Can you recommend any songs?
+    - Find me some songs similar to my playlist.
 
 - intent: add_all_recommended_songs
   examples: |
-    - Add all the songs
-    - Add all recommendations
-    - Add all the recommended songs
-    - Add every recommended track
-    - Add all suggestions
-    - Add all the music you recommended
-    - Add all by [Ed Sheeran](artist)
-    - Add all by [Taylor Swift](artist)
-    - Add all songs from the album [Divide](album)
-    - Add all tracks from the album [1989](album)
-    - Add all songs by [Drake](artist)
+    - Add all recommended songs to my playlist.
+    - Can you add all suggestions to my playlist?
+    - Add everything you recommended.
+    - Put all recommendations in my playlist.
+    - I want to add all recommended songs.
+    - Can you put all suggestions into my playlist?
+    - Please add all the recommended tracks.
+    - Include all suggested songs in my playlist.
+    - Add all the recommendations.
+    - Add all suggestions to my playlist.
+    - Could you add every recommended song to my list?
+    - Add all your song suggestions to my playlist.
+    - Put all the suggested tracks in my playlist.
+    - Can you add every recommended song?
+    - I’d like all recommended songs added.
+    - Add all recommended songs.
+    - Move every suggestion to my playlist.
+    - Add all tracks you've suggested.
+    - Include every recommended track.
+    - Can you add every recommendation to my list?
 
 - intent: add_position_recommended_songs
   examples: |
-    - Add the [first](position) [two](number)
-    - Add the [first](position) [three](number) songs
-    - Add the [third](position) song
-    - Add the [second](position) and [fourth](position) songs
-    - Add the [first](position) song from the list
-    - Add the [last](position) [two](number)
-    - Add the [last](position) [three](number) songs
-    - Add the [last](position) song
-    - Add song number [1](position)
-    - Add the [fifth](position) song
-    - Add song number [3](position)
-    - Add the [second](position) song
-
+    - Add the [first](position) recommended song.
+    - Include the [last](position) recommended song in my playlist.
+    - Add the [second](position) suggestion to my playlist.
+    - Put the [third](position) recommended track in my playlist.
+    - Please add the [first](position) recommended song to my playlist.
+    - Include the [second](position) recommended track.
+    - Add the [third](position) suggestion.
+    - I want to add the [fourth](position) suggested song.
+    - Add the [last](position) recommended song to my list.
+    - Add [second](position) recommended song.
+    - Can you add the [first](position) recommended song?
+    - Include the [fifth](position) suggestion.
+    - Add only the [third](position) song recommended.
+    - Put the [last](position) song suggestion in my playlist.
+    - I’d like to add the [second](position) track.
+    - Could you add the [fourth](position) song to my list?
+    - Move the [first](position) suggested track to my playlist.
+    - Put the [third](position) track into my playlist.
+    - Add the [second](position) song suggestion.
+    - Could you add the [last](position) track recommended?
 
 - intent: add_all_except_recommended_songs
   examples: |
@@ -377,14 +377,100 @@ nlu:
     - Add all except the song [Bad Habits](song)
     - Add every song except the one by [Adele](artist)
     - Add everything except the songs by [Drake](artist)
-    - Add all except the songs from the album [Divide](album)
-    - Add all except the tracks from the album [1989](album)
+    - Add all except the tracks from the album [Divide](album)
+    - Add all except the songs from the album [1989](album)
+    - Add every recommended track except [Shape of You](song)
+    - Include all songs but not those by [Drake](artist)
+    - Could you add everything but [Bad Habits](song)?
+    - Add everything except the album [Reputation](album)
+    - Add all except tracks from [Red](album)
+    - All recommendations except those by [Beyonce](artist)
+    - Put everything in except [Divide](album)
+    - Can you add all except [Drake](artist)?
+    - Exclude [Bad Habits](song) and add the rest.
+    - All but the songs by [Ed Sheeran](artist)
+    - Add all except any by [Kanye West](artist)
+
+- lookup: position
+  examples: |-
+    - first
+    - second
+    - third
+    - fourth
+    - fifth
+    - sixth
+    - seventh
+    - eighth
+    - ninth
+    - tenth
+    - last
+    - next
+    - previous
+    - current
+
+- lookup: number
+  examples: |-
+    - one
+    - two
+    - three
+    - four
+    - five
+    - six
+    - seven
+    - eight
+    - nine
+    - ten
+    - eleven
+    - twelve
+    - thirteen
+    - fourteen
+    - fifteen
 
 entities:
-- song
-- artist
-- album
-- position
-- number
-- show_command
-- clear_command
+  - song
+  - artist
+  - album
+  - position
+  - number
+  - show_command
+  - clear_command
+
+regex:
+  song:
+    - pattern: \b(?:[A-Za-z0-9\s'\-]+(?:\s(?:of|and|the)\s[A-Za-z0-9\s'\-]+)*)\b
+    - pattern: \b(?:[A-Za-z0-9\s'\-\(\)]+(?:\s(?:feat\.|ft\.)\s[A-Za-z0-9\s'\-]+)?)\b
+    - pattern: \b(?:[A-Za-z\s'\-]+(?:[\:\,\.]+)?(?:\s[A-Za-z0-9\s]+)?)\b
+
+  artist:
+    - pattern: \b(?:[A-Za-z\s'\/\-\&]+(?:[A-Za-z\&]+)?)\b
+    - pattern: \b(?:[A-Za-z0-9\&\-\s']+)\b
+    - pattern: \b(?:[A-Za-z\s'\-]+(?:\s(?:ft\.|feat\.)\s[A-Za-z\s]+)?)\b
+  
+  album:
+    - pattern: \b(?:[A-Za-z0-9\s'\-\:]+(?:\s(?:of|and)\s[A-Za-z0-9\s'\-]+)?)\b
+    - pattern: \b(?:[A-Za-z\s'\-\(\)]+(?:[\:\,\.]+)?)\b
+    - pattern: \b(?:[A-Za-z0-9\s'\-]+(?:[\:\,\.]+)?)\b
+
+synonyms:
+  position:
+    - index
+    - order
+    - spot
+    - place
+    - rank
+  show_command:
+    - display
+    - show
+    - list
+    - reveal
+    - pull up
+    - open
+    - fetch
+  clear_command:
+    - remove
+    - delete
+    - erase
+    - clear
+    - reset
+    - wipe
+    - empty

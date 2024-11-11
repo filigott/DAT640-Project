@@ -54,8 +54,10 @@ class ChatAgent:
         match possible_command:
             case Commands.exit.value:
                 self.goodbye()
-            case Commands.hello.value:
+            case Commands.greet.value:
                 self.welcome()
+            case Commands.learn.value:
+                self.learn_about_system()
             case Commands.parrot.value:
                 self.parrot(message_split)
             case Commands.seed.value:
@@ -108,7 +110,7 @@ class ChatAgent:
             self.conversation_context.recommend_playlist.pending_songs = [] # Probably not needed
             return
 
-        if confidence > 0.7 and self.conversation_context.recommend_playlist.state == RecommendPlaylistState.default :
+        if confidence > 0.7:
             match intent:
                 case Intents.list_songs_in_playlist:
                     self.view_playlist()
@@ -128,22 +130,28 @@ class ChatAgent:
 
 
     async def handle_more_intents(self, intent: Intents, entities: list):
-        song_details: SongDetails = extract_rasa_entities(entities)
+        song_details: SongDetails = extract_rasa_song_details(entities)
 
         # Use match-case to map intents to service functions
         match intent:
+            case Intents.greet:
+                self.welcome()
+                return
+            case Intents.learn_about_system:
+                self.learn_about_system()
+                return
             case Intents.ask_song_release_date:
-                result = await self.service.get_song_release_date(entities)
+                result = self.service.get_song_release_date(entities)
             case Intents.ask_songs_of_artist:
-                result = await self.service.get_songs_by_artist(entities)
+                result = self.service.get_songs_by_artist(entities)
             case Intents.ask_artist_of_song:
-                result = await self.service.get_artist_of_song(entities)
+                result = self.service.get_artist_of_song(entities)
             case Intents.ask_album_release_date:
-                result = await self.service.get_album_release_date(entities)
+                result = self.service.get_album_release_date(entities)
             case Intents.ask_album_of_song:
-                result = await self.service.get_album_of_song(entities)
+                result = self.service.get_albums_of_song(entities)
             case Intents.ask_albums_of_artist:
-                result = await self.service.get_albums_of_artist(entities)
+                result = self.service.get_albums_of_artist(entities)
             case Intents.add_song_to_playlist:
                 await self.add_song_conversation_start(song_details.title, song_details.artist, song_details.album)
                 return
@@ -304,19 +312,35 @@ class ChatAgent:
         result = await self.service.add_from_recommendations(entities, self.conversation_context.recommend_playlist.pending_songs)
         if result:
             self.add_response(result.get("message"))
+            for song, i in enumerate(result.get("songs")):
+                self.add_response(f"{i+1}: {song.title}")
     
-
+    
     async def add_position_recommended_songs(self, entities):
         result = await self.service.add_from_recommendations_position(entities, self.conversation_context.recommend_playlist.pending_songs)
         if result:
             self.add_response(result.get("message"))
+            for song, i in enumerate(result.get("songs")):
+                self.add_response(f"{i+1}: {song.title}")
+
+    
+    def learn_about_system(self) -> None:
+        self.add_response("You can try commands such as these")
+        commands_list = "\n".join(cmd.value for cmd in Commands)
+        self.add_response(commands_list)
+
+        self.add_response("Or you can try to initiate one of these intents using natural language:")
+        # Join intents with proper formatting
+        intents_list = "\n".join(" ".join(intent.split("_")) for intent in Intents._member_names_)
+        self.add_response(intents_list)
+        
+        self.add_response("For example: Add the song Thriller by Michael Jackson to my playlist")
 
 
     def _maybe_send_random_question(self, song_data: SongSchema) -> None:
         if (random.random() < RANDOM_QUESTION_CHANCE):
             example_question = generate_example_questions(song_data)
             self.add_response(f"Did you know you can ask me questions like: {example_question}")
-
 
     def _handle_no_song_matches(self, title: str, artist: Optional[str]) -> None:
         if not artist:

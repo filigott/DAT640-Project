@@ -5,3 +5,4 @@ alembic
 uvicorn
 rasa
 unidecode
+rapidfuzz
