@@ -172,24 +172,40 @@ def filter_and_rank_songs(
     songs_to_filter: List[SongModel],
     num_recommendations: int
 ) -> List[SongModel]:
+    
+    filtered_songs = songs_to_filter
+    
     # Extract artists, albums, and titles from the playlist songs
-    artists = {song.artist for song in playlist_songs}
-    albums = {song.album for song in playlist_songs}
-    titles = {song.title for song in playlist_songs}
+    if playlist_songs:
+        artists = {song.artist for song in playlist_songs}
+        albums = {song.album for song in playlist_songs}
+        titles = {song.title for song in playlist_songs}
 
-    # Filter the songs based on relaxed matching (at least one condition met)
-    filtered_songs = [
-        song for song in songs_to_filter
-        if song.artist in artists or song.album in albums and song.title not in titles
-    ]
+        print("Inside filter and rank songs: ", artists, albums, titles)
+
+        # Filter the songs based on relaxed matching (at least one condition met)
+        filtered_songs = [
+            song for song in songs_to_filter
+            if song.artist in artists or song.album in albums and song.title not in titles
+        ]
+
+    print("Num filtered song in filter_and_rank_songs: ", len(filtered_songs))
+    if not filtered_songs:
+        return []
 
     # Rank the filtered songs by ID in descending order (higher IDs are better)
-    top_songs = sorted(filtered_songs, key=lambda song: song.id, reverse=True)[:num_recommendations * 5]
+    top_songs = sorted(filtered_songs, key=lambda song: song.id, reverse=False)[:num_recommendations * 20]
+
+    print(f"Num top songs after sorting and limiting: {len(top_songs)}")
+
+    # Ensure the number of songs to sample is not greater than the available population
+    sample_size = min(num_recommendations, len(top_songs))
 
     # Randomly sample from the top-ranked songs for variety
-    final_selection = random.sample(top_songs, num_recommendations)
+    final_selection = random.sample(top_songs, sample_size)
 
     return final_selection
+
 
 
 def get_recommendations_from_songs(

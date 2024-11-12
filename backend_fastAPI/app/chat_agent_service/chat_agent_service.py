@@ -229,7 +229,7 @@ class ChatAgentService:
         else:
             song_ids = [song.id for song in cache]  # Add all recommendations
 
-        result = await self.add_multiple_songs_to_playlist(song_ids)
+        result = await self.add_multiple_songs_to_playlist_async(song_ids)
         return result
 
 
@@ -253,11 +253,11 @@ class ChatAgentService:
             pos_num = self.position_map.get(position)
             song_ids.append(cache[pos_num - 1].id)
 
-        result = await self.add_multiple_songs_to_playlist(song_ids)
+        result = await self.add_multiple_songs_to_playlist_async(song_ids)
         return result
 
 
-    async def add_multiple_songs_to_playlist(self, ids) -> Dict[str, Any]:
+    async def add_multiple_songs_to_playlist_async(self, ids) -> Dict[str, Any]:
         songs = []
 
         # Add each song by ID
@@ -299,90 +299,37 @@ class ChatAgentService:
         return []
     
 
-    def match_mood(self, song: dict, mood: str) -> bool:
-        """Determine if a song matches the given mood based on features."""
-        mood_match = False
-        if mood == "sad":
-            mood_match = song['valence'] < 0.3  # Example: low valence means sad
-        elif mood == "energetic":
-            mood_match = song['energy'] > 0.7  # High energy
-        elif mood == "chill":
-            mood_match = song['valence'] > 0.5 and song['energy'] < 0.3  # Mellow and relaxed
-        # Add more mood matching rules...
-        return mood_match
-    
+    async def create_playlist_from_description(self, entities: list) -> Optional[Dict[str, Any]]:
+        # Get inferred playlist length
+        playlist_length = self.infer_playlist_length(entities)
+        print("Inferred playlist length:", playlist_length)
 
-    def match_activity(self, song: dict, activity: str) -> bool:
-            """Match songs to activities by their tempo, energy, and danceability."""
-            activity_match = False
-            if activity == "gym":
-                activity_match = song['energy'] > 0.7  # High energy for gym
-            elif activity == "study":
-                activity_match = song['instrumentalness'] > 0.5  # More instrumental songs for study
-            elif activity == "party":
-                activity_match = song['danceability'] > 0.7  # Danceable songs for party
-            # Add more activity matching rules...
-            return activity_match
+        # Get mood and activity from the entities
+        mood = self._get_entity_value(entities, "mood")
+        activity = self._get_entity_value(entities, "activity")
 
+        # Use service to get recommended songs based on description
+        recommended_songs = await self.filter_songs_by_playlist_description(mood, activity, playlist_length)
 
-    
-    async def create_playlist_from_description(self, description: str) -> Optional[Dict[str, Any]]:
-        # Infer playlist length based on description
-        playlist_length = self.infer_playlist_length(description)
+        print("Number of recommended songs found for playlist: ", len(recommended_songs))
 
-        # Use a recommendation system or fetch songs based on the description
-        recommended_songs = self.filter_songs_by_playlist_description(description, playlist_length)
+        if recommended_songs:
+            self.clear_playlist()
+            song_ids = [song.id for song in recommended_songs]
+            await self.add_multiple_songs_to_playlist_async(song_ids)
 
-        # Return the playlist with the recommended songs
-        return {"message": f"Created a playlist with {len(recommended_songs)} songs based on your description: '{description}'",
-                "songs": recommended_songs}
-
-
-
-    def infer_playlist_length(self, entities: list) -> int:
-        """
-        Infer the playlist length in minutes based on user input and context.
-        This function considers the 'duration' entity, and intelligently uses other entities like 'activity' 
-        to infer a reasonable playlist length.
-        """
-        # Extract the duration entity (if provided)
-        duration = self.get_entity_value(entities, "duration")
+            # Return the playlist with the recommended songs
+            return {"message": f"Created a playlist with {len(recommended_songs)} songs based on your description.",
+                    "songs": recommended_songs}
         
-        # If the user specified a duration, return a playlist length based on that
-        if duration:
-            if duration == "long":
-                # For "long", set the playlist length to around 60-90 minutes
-                return 75  # For example, an average of 75 minutes for a long playlist
-            elif duration == "short":
-                # For "short", set the playlist length to around 20-40 minutes
-                return 30  # Example: 30 minutes for a short playlist
-        
-        # If no duration entity is specified, we infer based on activity or mood
-        
-        activity = self.get_entity_value(entities, "activity")
-        
-        if activity:
-            # Infer based on the activity
-            if activity in ["gym", "workout"]:
-                # A gym/workout session might require 45-60 minutes of music
-                return 50
-            elif activity in ["study", "study session"]:
-                # A study session might require 20-30 minutes of background music
-                return 25
-            elif activity in ["party", "road trip"]:
-                # A party or road trip might require a longer playlist, 60-90 minutes
-                return 75
-            elif activity in ["sleep", "meditation", "relaxation"]:
-                # A sleep or meditation playlist might be long, around 60-90 minutes
-                return 80
-
-        # Fallback: Default to an average playlist length
-        return 60  # Default length if no duration or activity is specified
+        return {"message": "Found no songs fitting the wanted playlist description."}
     
 
     async def filter_songs_by_playlist_description(self, mood: Optional[str], activity: Optional[str], playlist_length_minutes: int) -> List[dict]:
         # Query the database to get all songs
-        songs = SongModel.list_to_dto(r.get_all_songs())
+        songs = SongModel.list_to_dto(r.get_all_songs(self.db))
+
+        print(songs[0])
 
         # Filter songs by mood and activity
         if mood:
@@ -394,6 +341,8 @@ class ChatAgentService:
         # Assuming each song has a 'duration' field in seconds (e.g., 180 seconds = 3 minutes)
         total_duration = sum(song.duration for song in songs)
         num_songs = len(songs)
+
+        print("Num songs still here after mood and activity filtering: ", num_songs)
         
         if num_songs == 0:
             return []  # If no songs are found after filtering, return an empty list
@@ -406,6 +355,137 @@ class ChatAgentService:
         
         # If there are more songs than needed, select randomly
         if len(songs) > num_songs_needed:
-            songs = random.sample(songs, num_songs_needed)
+            songs = r.get_recommendations_from_songs(self.db, 1, songs, num_songs_needed)
 
         return songs
+    
+
+    def match_mood(self, song: SongSchema, mood: str) -> bool:
+        match mood:
+            case "sad":
+                return (song.valence or 0) < 0.3  # Stricter threshold for sadness
+            case "energetic":
+                return (song.energy or 0) > 0.75  # Higher energy required for energetic
+            case "chill":
+                return (song.valence or 0) > 0.55 and (song.energy or 0) < 0.3  # Higher valence and lower energy for chill
+            case "upbeat":
+                return (song.energy or 0) > 0.75 and (song.valence or 0) > 0.55  # Stricter upbeat condition
+            case "romantic":
+                return (song.valence or 0) > 0.7 and (song.energy or 0) < 0.6  # Romantic needs higher valence
+            case "relaxing":
+                return (song.energy or 0) < 0.3  # Lower energy required for relaxing
+            case "calm":
+                return (song.energy or 0) < 0.35 and (song.valence or 0) > 0.55  # Calm requires even lower energy and higher valence
+            case "happy":
+                return (song.valence or 0) > 0.65  # Stricter threshold for happy songs
+            case "motivational":
+                return (song.energy or 0) > 0.75 and (song.valence or 0) > 0.6  # Both higher energy and valence
+            case "fun":
+                return (song.danceability or 0) > 0.75  # Increased danceability for fun
+            case "lively":
+                return (song.energy or 0) > 0.65  # Stricter threshold for lively
+            case "peaceful":
+                return (song.valence or 0) > 0.7 and (song.energy or 0) < 0.3  # Peaceful needs high valence, low energy
+            case "bright":
+                return (song.energy or 0) > 0.7 and (song.valence or 0) > 0.65  # Stricter threshold for bright
+            case "mellow":
+                return (song.energy or 0) < 0.4  # Mellow requires lower energy
+            case "uplifting":
+                return (song.valence or 0) > 0.7 and (song.energy or 0) > 0.55  # Both high valence and energy for uplifting
+            case "fast-paced":
+                return (song.tempo or 0) > 120  # Stricter fast-paced tempo requirement
+            case "slow":
+                return (song.tempo or 0) < 85  # Stricter slow tempo
+            case "pump-up":
+                return (song.energy or 0) > 0.85  # Very high energy for pump-up
+            case _:
+                return False
+
+
+    def match_activity(self, song: SongSchema, activity: str) -> bool:
+        match activity:
+            case "gym":
+                return (song.energy or 0) > 0.8  # Requires higher energy for gym
+            case "workout":
+                return (song.energy or 0) > 0.8  # Higher energy required for workout
+            case "study":
+                return (song.instrumentalness or 0) > 0.6  # Stricter instrumentalness threshold for study
+            case "party":
+                return (song.danceability or 0) > 0.75  # Increased danceability for party
+            case "road trip":
+                return (song.energy or 0) > 0.65 and (song.danceability or 0) > 0.65  # Higher requirements for energy and danceability
+            case "sleep":
+                return (song.energy or 0) < 0.25  # Much lower energy required for sleep
+            case "running":
+                return (song.energy or 0) > 0.7 and (song.tempo or 0) > 120  # Higher energy and tempo for running
+            case "meditation":
+                return (song.energy or 0) < 0.3 and (song.instrumentalness or 0) > 0.7  # Requires both low energy and high instrumentalness
+            case "relaxation":
+                return (song.energy or 0) < 0.4 and (song.valence or 0) > 0.65  # More strict relaxing conditions
+            case "evening":
+                return (song.energy or 0) < 0.45  # Lower energy for evening
+            case "night out":
+                return (song.danceability or 0) > 0.75  # Stricter danceability for night out
+            case "dinner date":
+                return (song.valence or 0) > 0.65 and (song.energy or 0) < 0.5  # Requires higher valence and lower energy
+            case "morning run":
+                return (song.energy or 0) > 0.75 and (song.tempo or 0) > 120  # Stricter energy and tempo for morning run
+            case "reading":
+                return (song.instrumentalness or 0) > 0.7  # Higher instrumentalness for reading
+            case "spa day":
+                return (song.energy or 0) < 0.25 and (song.valence or 0) > 0.65  # Very low energy for spa day, high valence
+            case "night in":
+                return (song.energy or 0) < 0.45  # Low energy for night in
+            case "dance party":
+                return (song.danceability or 0) > 0.8  # Even higher danceability for dance party
+            case _:
+                return False
+
+
+
+    def infer_playlist_length(self, entities: list) -> int:
+        # Extract the duration, mood, and activity entities (if provided)
+        duration = self._get_entity_value(entities, "duration")
+        mood = self._get_entity_value(entities, "mood")
+        activity = self._get_entity_value(entities, "activity")
+        
+        # Default playlist length if no duration or activity is provided
+        playlist_length = 60  # Default length in minutes
+        
+        # Handle duration if specified
+        if duration:
+            if duration == "long":
+                playlist_length = 75  # Default duration for long playlist
+            elif duration == "short":
+                playlist_length = 30  # Default duration for short playlist
+        
+        # Modify playlist length based on mood and activity if they're provided
+        if mood:
+            if mood in ["energetic", "upbeat", "high-energy", "pump-up"]:
+                playlist_length += 15  # Energetic moods typically need longer playlists
+            elif mood in ["chill", "mellow", "slow"]:
+                playlist_length -= 15  # Chill/slow moods can be shorter
+            elif mood in ["motivational", "uplifting"]:
+                playlist_length += 10  # Motivational moods typically need mid-length playlists
+            elif mood in ["romantic", "peaceful", "relaxing", "calm"]:
+                playlist_length += 5  # Relaxing or romantic moods can be moderate length
+            elif mood in ["fun", "lively", "bright"]:
+                playlist_length += 10  # Fun or lively moods generally need a bit longer
+        
+        if activity:
+            if activity in ["gym", "workout", "dance party"]:
+                playlist_length += 10  # Ensure it's at least 50 minutes for workout-related activities
+            elif activity in ["study", "study session", "reading", "mellow"]:
+                playlist_length -= 10  # Shorter playlist for study or reading
+            elif activity in ["party", "road trip", "night out", "dinner date", "morning run", "spa day"]:
+                playlist_length += 15  # Longer playlists for road trips, parties, and active activities
+            elif activity in ["sleep", "meditation", "relaxation", "evening", "night in"]:
+                playlist_length += 20  # Longer playlists for sleep, meditation, and relaxation
+        
+        # Make sure the playlist length is within a reasonable range (e.g., 15 to 120 minutes)
+        playlist_length = max(15, min(120, playlist_length))
+
+        # Return the inferred playlist length
+        return playlist_length
+
+

@@ -139,28 +139,35 @@ def seed_db_dataset_sqlite(db: Session, sqlite_db_path: str):
 
         print("first row: ", rows[0])
 
+        # num_skipped = 0
+
         # Transform and insert into PostgreSQL
         songs = []
         for row in rows:
-            title = row[0] if row[0] is not None else 'Unknown Title'  # Handle missing titles
-            artist = row[1] if row[1] is not None else 'Unknown Artist'  # Handle missing artists
-            album = row[2] if row[2] is not None else 'Unknown Album'  # Handle missing albums
-            year = int(row[3].split('-')[0]) if row[3] else None  # Extract year from release date
-            duration = (row[4] // 1000) if row[4] is not None else None  # Handle missing duration
-            tempo = row[5] if row[5] is not None else None  # Handle missing tempo
+            title = row[0] if row[0] else 'Unknown Title'  # Set default for missing title
+            artist = row[1] if row[1] else 'Unknown Artist'  # Set default for missing artist
+            album = row[2] if row[2] else 'Unknown Album'  # Set default for missing album
+            year = int(row[3].split('-')[0]) if row[3] else 0  # Default to 0 if no year
+            duration = row[4] // 1000 if row[4] else 0  # Default to 0 if no duration
+            tempo = row[5] if row[5] is not None else 0  # Default to 0 if no tempo
             normalized_title = advanced_normalize_text(title)
 
             # New acoustic features
-            acousticness = row[6] if row[6] is not None else None
-            danceability = row[7] if row[7] is not None else None
-            energy = row[8] if row[8] is not None else None
-            instrumentalness = row[9] if row[9] is not None else None
-            key = row[10] if row[10] is not None else None
-            liveness = row[11] if row[11] is not None else None
-            loudness = row[12] if row[12] is not None else None
-            mode = row[13] if row[13] is not None else None
-            speechiness = row[14] if row[14] is not None else None
-            valence = row[15] if row[15] is not None else None
+            acousticness = row[6] if row[6] is not None else 0  # Default to 0 if no acousticness
+            danceability = row[7] if row[7] is not None else 0  # Default to 0 if no danceability
+            energy = row[8] if row[8] is not None else 0  # Default to 0 if no energy
+            instrumentalness = row[9] if row[9] is not None else 0  # Default to 0 if no instrumentalness
+            key = row[10] if row[10] is not None else 0  # Default to 0 if no key
+            liveness = row[11] if row[11] is not None else 0  # Default to 0 if no liveness
+            loudness = row[12] if row[12] is not None else 0  # Default to 0 if no loudness
+            mode = bool(row[13]) if bool(row[13]) is not None else False  # Default to False if no mode
+            speechiness = row[14] if row[14] is not None else 0  # Default to 0 if no speechiness
+            valence = row[15] if row[15] is not None else 0  # Default to 0 if no valence
+
+            # # Skip song if any required feature is missing
+            # if not all([title, artist, album, year, duration, tempo, acousticness, danceability, energy, instrumentalness, key, liveness, loudness, mode, speechiness, valence]):
+            #     num_skipped += 1
+            #     continue  # Skip this song
 
             song = SongModel(
                 title=title,
@@ -195,6 +202,7 @@ def seed_db_dataset_sqlite(db: Session, sqlite_db_path: str):
             db.commit()
 
         print(f"Inserted {len(songs)} total songs from SQLite to PostgreSQL.")
+        # print(f"Num skipped: {num_skipped}")
 
         # Add the demo songs to the playlist with id = 1
         add_demo_songs_to_playlist(db, playlist_id=1)

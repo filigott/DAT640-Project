@@ -284,10 +284,8 @@ class ChatAgent:
         if result:
             message = result.get("message", "I found the information you requested.")
             self.add_response(message)
-            songs = result.get("songs")
-            if songs:
-                for song in songs:
-                    self.add_response(f"{song.title} by {song.artist}")
+            songs: List[SongSchema] = result.get("songs")
+            self._respond_with_song_details(songs)
         else:
             self.add_response("I couldn't find the information you're looking for.")
 
@@ -305,29 +303,37 @@ class ChatAgent:
         result = await self.service.recommend_songs_based_on_playlist()
         if result:
             self.add_response(result.get("message"))
-            songs = result.get("songs")
+            songs: List[SongSchema] = result.get("songs")
             self.conversation_context.recommend_playlist.pending_songs = songs
             self.conversation_context.recommend_playlist.state = RecommendPlaylistState.in_progress
-            for index, song in enumerate(songs):
-                self.add_response(f"{index+1}: {song.title} by {song.artist}, id: {song.id}")
+            self._respond_with_song_details(songs, show_index=True)
 
 
     async def add_recommended_songs(self, entities):
         result = await self.service.add_from_recommendations(entities, self.conversation_context.recommend_playlist.pending_songs)
         if result:
             self.add_response(result.get("message"))
-            for i, song in enumerate(result.get("songs")):
-                self.add_response(f"{i+1}: {song.title}")
-    
+            songs: List[SongSchema] = result.get("songs")
+            self._respond_with_song_details(songs, show_index=True)
+
     
     async def add_position_recommended_songs(self, entities):
         result = await self.service.add_from_recommendations_position(entities, self.conversation_context.recommend_playlist.pending_songs)
         if result:
             self.add_response(result.get("message"))
-            for i, song in enumerate(result.get("songs")):
-                self.add_response(f"{i+1}: {song.title}")
+            songs: List[SongSchema] = result.get("songs")
+            self._respond_with_song_details(songs, show_index=True)
 
-    
+
+    async def generate_playlist_based_on_description(self, entities) -> None:
+        # Filter songs based on entities and inferred playlist length
+        result = await self.service.create_playlist_from_description(entities)
+        if result:
+            self.add_response(result.get("message"))
+            songs: List[SongSchema] = result.get("songs")
+            self._respond_with_song_details(songs)
+
+
     def learn_about_system(self) -> None:
         self.add_response("You can try commands such as these")
         commands_list = "\n".join(cmd.value for cmd in Commands)
@@ -341,14 +347,6 @@ class ChatAgent:
         self.add_response("For example: Add the song Thriller by Michael Jackson to my playlist")
     
 
-    async def generate_playlist_based_on_description(self, entities: list, db: Session) -> None:
-        # Filter songs based on entities and inferred playlist length
-        result = await self.service.create_playlist_from_description(entities, db)
-        if result:
-            self.add_response(result.get("message"))
-            for i, song in enumerate(result.get("songs")):
-                self.add_response(f"{i+1}: {song.title}")
-
     def _maybe_send_random_question(self, song_data: SongSchema) -> None:
         if (random.random() < RANDOM_QUESTION_CHANCE):
             example_question = generate_example_questions(song_data)
@@ -359,4 +357,14 @@ class ChatAgent:
             self.add_response(f"I couldn't find a song matching '{title}'. Please double-check the details.")
         else:
             self.add_response(f"Sorry, I couldn't find any matches for '{title}' by {artist}. Please double-check the details.")
-    
+
+    def _respond_with_song_details(self, songs: List[SongSchema], show_index: bool = False):
+        if songs:
+            self.add_response("The playlist now contains the songs:")
+            for i, song in enumerate(songs, start=1):
+                # Construct the response text with or without the index
+                song_text = (f"{i}: " if show_index else "") + f"{song.title} by {song.artist} ({song.album}) - {song.year}"
+                self.add_response(song_text)
+        else:
+            self.add_response("No songs found.")
+
