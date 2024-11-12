@@ -5,14 +5,16 @@ from app.chat_agent import ChatAgent
 from .websocket import ws_manager_chat
 
 class ChatWSMediator:
-    def __init__(self, user_id: str, websocket: WebSocket, db: Session):
+    def __init__(self, user_id: int, websocket: WebSocket, db: Session):
         self.user_id = user_id
         self.websocket = websocket
-        self.chat_agent = ChatAgent(db)
+        self.chat_agent = ChatAgent(db, user_id)
         self.awaiting_ack = False
 
     async def handle_connection(self):
         await ws_manager_chat.connect(self.user_id, self.websocket)
+        self.chat_agent.service.create_playlist_if_not_exist(self.user_id)
+
         if not ws_manager_chat.has_sent_welcome(self.user_id):
             self.chat_agent.welcome()
             ws_manager_chat.set_welcome_sent(self.user_id)

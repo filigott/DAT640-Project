@@ -9,7 +9,7 @@ from app.schemas import SongSchema
 # Endpoints for API services
 RASA_URL = "http://localhost:5005/model/parse"
 
-RANDOM_QUESTION_CHANCE = 0.5
+RANDOM_QUESTION_CHANCE = 0
 MAX_NUM_SONGS = 5
 
 class IntentType(Enum):

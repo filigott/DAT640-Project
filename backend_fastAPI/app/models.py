@@ -49,6 +49,10 @@ class SongModel(DB_Base):
     def list_to_dto(cls, song_models) -> List[SongSchema]:
         """Map a list of SongModel instances to a list of SongSchema instances."""
         return [song.to_dto() for song in song_models]
+    
+    def __repr__(self):
+        return (f"SongModel(id={self.id}, title='{self.title}', artist='{self.artist}', "
+                f"album='{self.album}', year={self.year})")
 
 class PlaylistModel(DB_Base):
     __tablename__ = 'playlists'

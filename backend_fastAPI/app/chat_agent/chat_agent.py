@@ -7,13 +7,17 @@ from .chat_utils import *
 from app.chat_agent_service import ChatAgentService
 
 class ChatAgent:
-    def __init__(self, db_session: Session):
+    def __init__(self, db_session: Session, user_id: int):
         self.service = ChatAgentService(db_session)
+        self.user_id = user_id
         # Map intents to ChatAgentService functions
         self.welcome_sent = False
         self.response_queue: Deque[str] = deque()  # Queue to store multiple responses
         # Stores state needed to handle multi-response conversations
         self.conversation_context = ConversationContext()
+
+    def create_playlist_if_not_exist(self, user_id: str):
+        self.service.create_playlist_if_not_exist(user_id)
     
     def add_response(self, message: str, action: str = "message"):
         self.response_queue.append({"action": action, "message": message})
@@ -183,11 +187,10 @@ class ChatAgent:
             song_matches: List[SongSchema] = self.service.find_song_matches(title, artist, None, None)
 
             print("Num song matches: ", len(song_matches))
-            print(f"Song matches: ", song_matches)
 
             if len(song_matches) == 1:
                 # If exactly one match, add the song directly
-                await self.add_song_async(song_matches[0])
+                await self.add_song_async(song_matches[0], self.user_id)
                 self.conversation_context.add_song.state = AddSongState.song_added
 
             elif len(song_matches) > 1:
@@ -238,10 +241,10 @@ class ChatAgent:
             if self.conversation_context.add_song.state == AddSongState.song_added:
                 self.conversation_context.add_song.state = AddSongState.default
 
-    async def add_song_async(self, song: SongSchema):
+    async def add_song_async(self, song: SongSchema, user_id: int):
         song_data = {"id": song.id, "title": song.title, "artist": song.artist}
         print("song data sent to add song service:", song_data)
-        song: SongSchema = await self.service.add_song_to_playlist_async(song_data)
+        song: SongSchema = await self.service.add_song_to_playlist_async(song_data, user_id)
         if song:
             self.add_response(f"Song '{song.title}' by '{song.artist}' has been added to your playlist.")
             self._maybe_send_random_question(song)
@@ -264,7 +267,7 @@ class ChatAgent:
 
 
     def view_playlist(self):
-        playlist_data = self.service.view_playlist()
+        playlist_data = self.service.view_playlist(playlist_id=self.user_id)
         
         if playlist_data and playlist_data.songs:
             self.add_response("Your playlist includes:")
@@ -277,7 +280,7 @@ class ChatAgent:
             self.add_response("I couldn't retrieve the playlist details.")
 
     async def clear_playlist_async(self):
-        await self.service.clear_playlist_async()
+        await self.service.clear_playlist_async(playlist_id=self.user_id)
         self.add_response("Playlist cleared.")
     
 
