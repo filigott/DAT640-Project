@@ -100,17 +100,19 @@ class ChatAgent:
                     await self.add_recommended_songs(entities)
                 case Intents.add_position_recommended_songs:
                     await self.add_position_recommended_songs(entities)
-                # case Intents.add_all_except_recommended_songs:
-                #     self.add_all_except_recommended_songs(entities)
+                case Intents.add_all_except_recommended_songs:
+                    await self.add_except_recommended_songs(entities)
+                case Intents.add_none_recommended_songs:
+                    self.add_response("Understood. Is there something else I can help you with?")
                 case _:
-                    pass
+                    self.add_response("Did not understand. Aborting recommendations.")
             self.conversation_context.recommend_playlist.state = RecommendPlaylistState.finished
         
         # Reset recommend playlist conversation context
         if  self.conversation_context.recommend_playlist.state == RecommendPlaylistState.finished:
             self.conversation_context.recommend_playlist.state = RecommendPlaylistState.default
             self.conversation_context.recommend_playlist.pending_songs = [] # Probably not needed
-            # return
+            return
 
         if confidence > 0.7:
             match intent:
@@ -285,6 +287,8 @@ class ChatAgent:
             message = result.get("message", "I found the information you requested.")
             self.add_response(message)
             songs: List[SongSchema] = result.get("songs")
+            self.add_response("The playlist now contains the songs:")
+
             self._respond_with_song_details(songs)
         else:
             self.add_response("I couldn't find the information you're looking for.")
@@ -323,6 +327,13 @@ class ChatAgent:
             self.add_response(result.get("message"))
             songs: List[SongSchema] = result.get("songs")
             self._respond_with_song_details(songs, show_index=True)
+    
+    async def add_except_recommended_songs(self, entities):
+        result = await self.service.add_from_recommendations_except(entities, self.conversation_context.recommend_playlist.pending_songs)
+        if result:
+            self.add_response(result.get("message"))
+            songs = result.get("songs")
+            self._respond_with_song_details(songs, show_index=True)
 
 
     async def generate_playlist_based_on_description(self, entities) -> None:
@@ -331,6 +342,8 @@ class ChatAgent:
         if result:
             self.add_response(result.get("message"))
             songs: List[SongSchema] = result.get("songs")
+            self.add_response("The playlist now contains the songs:")
+
             self._respond_with_song_details(songs)
 
 
@@ -360,7 +373,6 @@ class ChatAgent:
 
     def _respond_with_song_details(self, songs: List[SongSchema], show_index: bool = False):
         if songs:
-            self.add_response("The playlist now contains the songs:")
             for i, song in enumerate(songs, start=1):
                 # Construct the response text with or without the index
                 song_text = (f"{i}: " if show_index else "") + f"{song.title} by {song.artist} ({song.album}) - {song.year}"

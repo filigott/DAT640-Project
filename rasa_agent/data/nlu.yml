@@ -359,6 +359,11 @@ nlu:
     - Add all tracks you've suggested.
     - Include every recommended track.
     - Can you add every recommendation to my list?
+    - Add all by [Ed Sheeran](artist)
+    - Add all songs by [Taylor Swift](artist)
+    - Add all songs from the album [Divide](album)
+    - Add all from [Drake](aritst)
+
 
 - intent: add_position_recommended_songs
   examples: |
@@ -382,29 +387,54 @@ nlu:
     - Put the [third](position) track into my playlist.
     - Add the [second](position) song suggestion.
     - Could you add the [last](position) track recommended?
+    - Add song number [2](position)
+    - Add [2](postion) and [3](position)
+    - Add the [fifth](position), [sixth](position) and [seventh](position) song 
 
 - intent: add_all_except_recommended_songs
   examples: |
-    - Add all except the one by [Ed Sheeran](artist)
-    - Add every song except the songs by [Ed Sheeran](artist)
-    - Add all except the song [Shape of You](song)
-    - Add all except the songs by [Taylor Swift](artist)
-    - Add all except the song [Bad Habits](song)
-    - Add every song except the one by [Adele](artist)
-    - Add everything except the songs by [Drake](artist)
-    - Add all except the tracks from the album [Divide](album)
-    - Add all except the songs from the album [1989](album)
-    - Add every recommended track except [Shape of You](song)
+    - Add all [except](except_command) the one by [Ed Sheeran](artist)
+    - Add every song [except](except_command) the songs by [Ed Sheeran](artist)
+    - Add all [except](except_command) the song [Shape of You](song)
+    - Add all [except](except_command) the songs by [Taylor Swift](artist)
+    - Add all [except](except_command) the song [Bad Habits](song)
+    - Add every song [except](except_command) the one by [Adele](artist)
+    - Add everything [except](except_command) the songs by [Drake](artist)
+    - Add all [except](except_command) the tracks from the album [Divide](album)
+    - Add all [except](except_command) the songs from the album [1989](album)
+    - Add every recommended track [except](except_command) [Shape of You](song)
     - Include all songs but not those by [Drake](artist)
     - Could you add everything but [Bad Habits](song)?
-    - Add everything except the album [Reputation](album)
-    - Add all except tracks from [Red](album)
-    - All recommendations except those by [Beyonce](artist)
-    - Put everything in except [Divide](album)
-    - Can you add all except [Drake](artist)?
+    - Add everything [except](except_command) the album [Reputation](album)
+    - Add all [except](except_command) tracks from [Red](album)
+    - All recommendations [except](except_command) those by [Beyonce](artist)
+    - Put everything in [except](except_command) [Divide](album)
+    - Can you add all [except](except_command) [Drake](artist)?
     - Exclude [Bad Habits](song) and add the rest.
     - All but the songs by [Ed Sheeran](artist)
-    - Add all except any by [Kanye West](artist)
+    - Add all [except](except_command) any by [Kanye West](artist)
+    - Add all [except](except_command) the [first](position) [two](number).
+    - Add every song except the [last](position)
+    - Add all songs without number [5](position) and [6](position).
+    - add them except the one by [Metallica](artist)
+
+- intent: add_none_recommended_songs
+  examples: | 
+    - Don't want any of the songs
+    - I don't like any of these
+    - None of these songs are good
+    - Remove all recommended songs
+    - Skip all these songs
+    - I want to delete all the recommendations
+    - None of these songs work for me
+    - Please clear all the suggested songs
+    - I don't want to add any of these
+    - No recommended songs, please
+    - I dislike all of these
+    - These songs are not what I want
+    - Leave out all the recommendations
+    - Don't include any of these songs
+
 
 - intent: generate_playlist_based_on_description
   examples: |

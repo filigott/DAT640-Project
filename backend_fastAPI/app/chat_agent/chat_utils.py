@@ -40,7 +40,8 @@ class Intents(Enum):
     add_all_recommended_songs = auto()
     add_position_recommended_songs = auto()
     add_all_except_recommended_songs = auto()
-
+    add_none_recommended_songs = auto()
+    
     generate_playlist_based_on_description = auto()
 
 

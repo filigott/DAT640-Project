@@ -240,7 +240,10 @@ class ChatAgentService:
         song_ids = []
 
         if position and number:
-            pos_index = self.position_map.get(position) - 1
+            pos_index = self.position_map.get(position)
+            if pos_index is None:
+                pos_index = int(position) - 1
+            print(pos_index)
             number = self.number_map.get(number, number)
 
             # Wants to add last(position) two(number) songs
@@ -250,12 +253,32 @@ class ChatAgentService:
             else:
                 song_ids = [song.id for song in cache[pos_index:number]]
         elif position and not number:
-            pos_num = self.position_map.get(position)
-            song_ids.append(cache[pos_num - 1].id)
+            pos_index = self.position_map.get(position)  
+            if pos_index is None:
+                pos_index = int(position) - 1
+            song_ids.append(cache[pos_index].id)
 
         result = await self.add_multiple_songs_to_playlist_async(song_ids)
         return result
 
+    async def add_from_recommendations_except(self, entity_values, cache):
+        artist = self._get_entity_value(entity_values, "artist")
+        position = self._get_entity_value(entity_values, "position")
+        number = self._get_entity_value(entity_values, "number")        
+        song_ids = []
+
+        # Add all except the songs by aritst
+        if artist and not position and not number:
+            song_ids = [song.id for song in cache if song.artist != artist]
+
+        elif not artist and position and number:
+            pass
+        elif not artist and position and not number:
+            pos_num = self.position_map.get(position)
+            song_ids = [song.id for index, song in enumerate(cache) if index != pos_num - 1] 
+
+        result = await self.add_multiple_songs_to_playlist_async(song_ids)
+        return result            
 
     async def add_multiple_songs_to_playlist_async(self, ids) -> Dict[str, Any]:
         songs = []
