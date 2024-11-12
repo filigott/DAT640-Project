@@ -18,7 +18,7 @@ class UserSimAgent:
         self.all_user_messages = []
         self.all_responses = []
         self.completed = False
-        self.turn_count = 0
+        self.turn_count = 1
         self.num_songs_playlist = 0
         self.max_turns = profile.goal.max_turns or DEFAULT_MAX_TURNS
         self.valid_commands = Commands
@@ -40,7 +40,7 @@ class UserSimAgent:
         await self.ws_client.receive_response()
 
         while not self.completed and self.turn_count < self.max_turns:
-            await asyncio.sleep(random.uniform(3, 5))
+            await asyncio.sleep(random.uniform(3, 8))
             print(f"[Client {self.profile.id}] Current turn: {self.turn_count}")
 
             user_message = self.get_user_message()
@@ -174,3 +174,13 @@ class UserSimAgent:
             self.profile.liked_songs = [song for song in self.profile.liked_songs if song != self.last_added_song]
             self.num_songs_playlist += 1
             self.last_added_song = None  # Reset after removal
+
+    def get_summary(self):
+            """Generate a summary of the simulation results."""
+            return {
+                "user_id": self.user_id,
+                "goal": self.goal.goal_text,
+                "actions_taken": self.turn_count,
+                "songs_added_to_playlist": self.num_songs_playlist,
+                "completed": self.completed,
+            }

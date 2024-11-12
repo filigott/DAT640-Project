@@ -25,7 +25,9 @@ class UserProfile:
         self.action_weights = action_weights or default_action_weights()
 
     def __repr__(self):
-        return f"UserProfile(id={self.id}, goal={self.goal}, allowed_actions={self.allowed_actions})"
+        return (f"UserProfile(id={self.id}, "
+                f"Goal: {self.goal.goal_text}, "
+                f"Allowed Actions: {', '.join(action.name for action in self.allowed_actions)}")
 
     def available_actions(self) -> List[UserAction]:
         return self.allowed_actions
@@ -54,7 +56,8 @@ user_profiles = [
         ),
         allowed_actions=[
             UserAction.add_song_to_playlist,
-            UserAction.get_list_of_songs_in_playlist
+            UserAction.get_list_of_songs_in_playlist,
+            UserAction.exit_conversation
         ],
         action_weights={
             UserAction.add_song_to_playlist: 75,
@@ -81,7 +84,8 @@ user_profiles = [
         ),
         allowed_actions=[
             UserAction.add_song_to_playlist,
-            UserAction.get_list_of_songs_in_playlist
+            UserAction.get_list_of_songs_in_playlist,
+            UserAction.exit_conversation
         ],
           action_weights={
             UserAction.add_song_to_playlist: 85,
@@ -89,40 +93,56 @@ user_profiles = [
             UserAction.exit_conversation: 5,
         }
     ),
-    # UserProfile(
-    #     id=4,
-    #     liked_artists=["The Beatles", "Queen", "Micheal Jackson"],
-    #     disliked_artists=["Justin Bieber"],
-    #     liked_songs=[
-    #     {"title": "Come Together", "artist": "The Beatles"},
-    #     {"title": "We Will Rock You", "artist": "Queen"},
-    #     {"title": "Billie Jean", "artist": "Michael Jackson"}
-    # ],
-    #     disliked_songs=["Baby"],
-    #     goal=UserGoal(
-    #         goal_type=UserGoalType.create_playlist,
-    #         goal_text="Create a playlist with up to 10 favorite songs from liked artists",
-    #         max_songs=10
-    #     ),
-    #     # allowed_actions=[UserAction.add_song_to_playlist, UserAction.add_song_to_playlist_by_artist]
-    #     allowed_actions=[
-    #         UserAction.add_song_to_playlist
-    #         ]
-    # ),
-    # UserProfile(
-    #     id=2,
-    #     liked_artists=["Adele", "Ed Sheeran"],
-    #     disliked_artists=["Kanye West"],
-    #     liked_songs=["Someone Like You", "Shape of You"],
-    #     disliked_songs=["Stronger"],
-    #     goal=UserGoal.ask_album_details
-    # ),
-    # UserProfile(
-    #     id=3,
-    #     liked_artists=["Billie Eilish", "Lorde"],
-    #     disliked_artists=["Nickelback"],
-    #     liked_songs=["Bad Guy", "Royals"],
-    #     disliked_songs=["Photograph"],
-    #     goal=UserGoal.receive_recommendations
-    # ),
+    UserProfile(
+        id=4,
+        liked_artists=["Adele", "Ed Sheeran", "John Legend"],
+        disliked_artists=["Kanye West", "Justin Bieber"],
+        liked_songs=[
+            {"title": "Someone Like You", "artist": "Adele"},
+            {"title": "Shape of You", "artist": "Ed Sheeran"},
+            {"title": "All of Me", "artist": "John Legend"}
+        ],
+        disliked_songs=["Baby"],
+        goal=UserGoal(
+            goal_type=UserGoalType.create_playlist,
+            goal_text="Create a playlist with slow ballads",
+            max_songs=5
+        ),
+        allowed_actions=[
+            UserAction.add_song_to_playlist,
+            UserAction.get_list_of_songs_in_playlist,
+            UserAction.exit_conversation
+        ],
+        action_weights={
+            UserAction.add_song_to_playlist: 60,
+            UserAction.get_list_of_songs_in_playlist: 30,
+            UserAction.exit_conversation: 10,
+        }
+    ),
+    UserProfile(
+        id=5,
+        liked_artists=["Taylor Swift", "Ed Sheeran", "Ariana Grande"],
+        disliked_artists=["Kanye West"],
+        liked_songs=[
+            {"title": "Love Story", "artist": "Taylor Swift"},
+            {"title": "Perfect", "artist": "Ed Sheeran"},
+            {"title": "No Tears Left to Cry", "artist": "Ariana Grande"}
+        ],
+        disliked_songs=["Baby"],
+        goal=UserGoal(
+            goal_type=UserGoalType.receive_recommendations,
+            goal_text="Create a playlist. But also not.",
+            max_songs=3
+        ),
+        allowed_actions=[
+            UserAction.add_song_to_playlist,
+            UserAction.get_list_of_songs_in_playlist,
+            UserAction.exit_conversation
+        ],
+        action_weights={
+            UserAction.add_song_to_playlist: 30,
+            UserAction.get_list_of_songs_in_playlist: 20,
+            UserAction.exit_conversation: 50,
+        }
+    )
 ]
