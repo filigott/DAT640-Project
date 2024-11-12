@@ -21,6 +21,6 @@ async def playlist_websocket_endpoint(websocket: WebSocket):
 
 
 @router.websocket("/ws/chat/{user_id}")
-async def chat_websocket_endpoint(user_id: str, websocket: WebSocket, db: Session = Depends(get_db)):
+async def chat_websocket_endpoint(user_id: int, websocket: WebSocket, db: Session = Depends(get_db)):
     chat_handler = ChatWSMediator(user_id, websocket, db)
     await chat_handler.handle_connection()

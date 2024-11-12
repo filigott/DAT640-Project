@@ -11,6 +11,16 @@ from ..models import PlaylistModel, SongModel
 MAX_NUM_SONGS_SEARCH = 10
 RAPIDFUZZ_SCORE_CUTOFF = 70
 
+def create_playlist(db: Session, user_id: int):
+    playlist: PlaylistModel = db.query(PlaylistModel).filter(PlaylistModel.id == user_id).first()
+
+    if playlist:
+        return
+ 
+    playlist = PlaylistModel(title=f"User {user_id}'s favorite songs")
+    db.add(playlist)
+    db.commit()
+
 def demo_seed_database(db: Session):
     seed_db_demo(db)
 
@@ -58,6 +68,11 @@ def add_song_to_playlist(db: Session, playlist_id: int, song_id: int) -> Optiona
     """Add a song to a specific playlist and return the added song."""
     playlist = get_playlist(db, playlist_id)
     song = db.query(SongModel).filter(SongModel.id == song_id).first()
+
+    print("Song model inside: ", song)
+
+    print(playlist)
+    print(playlist.songs)
     
     if playlist and song and song not in playlist.songs:
         playlist.songs.append(song)
@@ -294,7 +309,18 @@ def find_exact_song_match(
     if year:
         filters.append(SongModel.year == year)
 
-    # Query with all filters applied. NB! need limit higher than 1
-    matched_songs = db.query(SongModel).filter(and_(*filters)).limit(2).all()
+    # Query with all filters applied
+    matched_songs = db.query(SongModel).filter(and_(*filters)).all()
     
-    return matched_songs[0] if len(matched_songs) == 1 else None
+    # Return the song if there is a unique match
+    if len(matched_songs) == 1:
+        return matched_songs[0]
+    elif len(matched_songs) > 1 and artist:
+        # Additional check for exact match with title and artist only
+        best_match = matched_songs[0]
+        for song in matched_songs[1:]:
+            if best_match.title == song.title and best_match.artist == song.artist:
+                return best_match
+
+    # No unique exact match found
+    return None

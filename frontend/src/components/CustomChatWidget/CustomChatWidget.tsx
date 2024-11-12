@@ -6,7 +6,7 @@ interface CustomChatWidgetProps {
 }
 
 // Custom hook to manage WebSocket connection
-const useWebSocket = (userId: string) => {
+const useWebSocket = (userId: number) => {
   const ws_chat = useRef<WebSocket | null>(null);
   const [messages, setMessages] = useState<{ sender: string; text: string }[]>([]);
   const [loading, setLoading] = useState(false);
@@ -70,7 +70,7 @@ const CustomChatWidget: React.FC<CustomChatWidgetProps> = ({ reconnectAll }) => 
   const [messageHistory, setMessageHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1); // Track position in message history
   
-  const userId = "user-123";
+  const userId = 1;
   const { messages, setMessages, loading, setLoading, disconnected, establishConnection, hasConnected, ws_chat } = useWebSocket(userId);
 
   // Reference to scroll to the bottom of the messages

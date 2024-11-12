@@ -23,6 +23,9 @@ class ChatAgentService:
             "ten": 10,
         }
 
+    def create_playlist_if_not_exist(self, user_id: int):
+        print(f"Trying to create playlist for user {user_id}, if not exist.")
+        r.create_playlist(self.db, user_id)
 
     async def seed_async(self) -> bool:
         r.seed_db_demo(self.db)
@@ -43,11 +46,11 @@ class ChatAgentService:
         return None
 
 
-    async def add_song_to_playlist_async(self, song_description: Dict[str, Any]) -> Optional[SongSchema]:
+    async def add_song_to_playlist_async(self, song_description: Dict[str, Any], user_id: int) -> Optional[SongSchema]:
         print(song_description)
         id = r.get_song_by_song_description(self.db, song_description)
         if id:
-            song_model = r.add_song_to_playlist(self.db, 1, id)
+            song_model = r.add_song_to_playlist(self.db, playlist_id=user_id, song_id=id)
             await ws_push_playlist_update()
             return song_model.to_dto()
         return None
@@ -283,6 +286,8 @@ class ChatAgentService:
 
         # Step 1: Attempt an exact match first
         exact_match = r.find_exact_song_match(self.db, title, artist, album, year)
+
+        print("Exact match: ", exact_match)
         
         if exact_match:
             # Return a single exact match as a list with one item
