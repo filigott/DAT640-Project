@@ -1,4 +1,19 @@
 version: "3.1"
+
+entities:
+  - song
+  - artist
+  - album
+  - position
+  - number
+  - show_command
+  - clear_command
+
+  # Generate playlist entities
+  - mood
+  - activity
+  - duration
+
 nlu:
 - intent: greet
   examples: |
@@ -113,7 +128,7 @@ nlu:
     - Who's the singer of [Someone Like You](song)?
     - Tell me who sang [Billie Jean](song)
     - Which band created [Yellow](song)?
-    - Who wrote [All of Me](song)?
+    - Who wrote [all of me](song)?
 
 - intent: ask_album_release_date
   examples: |
@@ -132,7 +147,7 @@ nlu:
     - What year did [the wall](album) come out?
     - When was [Rumours](album) released?
     - Which year did they release [Purple Rain](album)?
-    - Tell me when [Born This Way](album) came out
+    - Tell me when [born this way](album) came out
     - What year was [X](album) released?
     - When did [Recovery](album) drop?
     - Release date of [Red](album)?
@@ -155,7 +170,7 @@ nlu:
     - What album has [bad guy](song)?
     - Which album contains [hotel california](song)?
     - What record features [Shake It Off](song)?
-    - Which album is [Uptown Funk](song) from?
+    - Which album is [uptown funk](song) from?
     - What album includes [Someone Like You](song)?
     - Which record has [Yellow](song) on it?
     - What album contains [All of Me](song)?
@@ -164,7 +179,7 @@ nlu:
 - intent: add_song_to_playlist
   examples: |
     - Add the song [Shape of You](song) to my playlist
-    - Put [Bohemian Rhapsody](song) in my playlist
+    - Put [bohemian rhapsody](song) in my playlist
     - Include [Imagine](song) in the playlist
     - Add the song [Thriller](song) by [Michael Jackson](artist) to my playlist
     - Put [Bad Guy](song) by [Billie Eilish](artist) in
@@ -173,16 +188,16 @@ nlu:
     - Put [Blinding Lights](song) in my playlist
     - Include [bad guy](song) by [billie eilish](artist)
     - Add [hotel california](song) to the playlist
-    - Put [Sweet Child O' Mine](song) in
+    - Put [sweet Child o mine](song) in
     - Add [Stairway to Heaven](song) to my list
     - Include [Yesterday](song) by [The Beatles](artist)
     - Put [Purple Rain](song) from [Purple Rain](album) in
     - Add [Uptown Funk](song) by [Bruno Mars](artist)
     - Include [Shake It Off](song) to my playlist
-    - Put [Someone Like You](song) in my list
+    - Put [someone like you](song) in my list
     - Add the song [Yellow](song) by [Coldplay](artist)
     - Include [All of Me](song) from [Love in the Future](album)
-    - Put [Rolling in the Deep](song) in my playlist
+    - Put [rolling in the deep](song) in my playlist
 
 - intent: remove_song_from_playlist
   examples: |
@@ -391,6 +406,34 @@ nlu:
     - All but the songs by [Ed Sheeran](artist)
     - Add all except any by [Kanye West](artist)
 
+- intent: generate_playlist_based_on_description
+  examples: |
+    - Create a [sad](mood) playlist.
+    - Make a [energetic](mood) playlist for the [gym](activity).
+    - I want a [chill](mood) playlist for [study](activity).
+    - Can you create a [party](activity) playlist with [upbeat](mood) songs?
+    - Generate a [long](duration) playlist for a [workout](activity).
+    - Make a [short](duration) playlist for a [study session](activity).
+    - I need a [romantic](mood) playlist for an [evening](activity).
+    - Create a [happy](mood) playlist for a [road trip](activity).
+    - Can you create a [relaxing](mood) playlist for [sleep](activity)?
+    - I need a [motivational](mood) playlist for a [workout](activity).
+    - Give me a [fun](mood) playlist for a [party](activity).
+    - Make a [calm](mood) playlist for [meditation](activity).
+    - Create a [chill](mood) playlist for [relaxation](activity).
+    - I need a [lively](mood) playlist for a [night out](activity).
+    - Can you generate a [peaceful](mood) playlist for [sleeping](activity)?
+    - Make a [romantic](mood) playlist for a [dinner date](activity).
+    - I want a [pump-up](mood) playlist for a [gym session](activity).
+    - Create a [high-energy](mood) playlist for a [dance party](activity).
+    - Generate a [slow](mood) playlist for a [chill evening](activity).
+    - Can you make a [bright](mood) playlist for a [morning run](activity)?
+    - Make me a [mellow](mood) playlist for [reading](activity).
+    - I need an [uplifting](mood) playlist for a [road trip](activity).
+    - Generate a [fast-paced](mood) playlist for a [workout](activity).
+    - Make a [relaxed](mood) playlist for a [spa day](activity).
+    - I want a [romantic](mood) playlist for a [night in](activity).
+
 - lookup: position
   examples: |-
     - first
@@ -426,14 +469,51 @@ nlu:
     - fourteen
     - fifteen
 
-entities:
-  - song
-  - artist
-  - album
-  - position
-  - number
-  - show_command
-  - clear_command
+- lookup: mood
+  examples: |
+    - sad
+    - energetic
+    - chill
+    - upbeat
+    - romantic
+    - relaxing
+    - calm
+    - happy
+    - motivational
+    - fun
+    - lively
+    - peaceful
+    - bright
+    - mellow
+    - uplifting
+    - fast-paced
+    - slow
+    - pump-up
+
+- lookup: activity
+  examples: |
+    - gym
+    - workout
+    - study
+    - party
+    - road trip
+    - sleep
+    - running
+    - meditation
+    - relaxation
+    - evening
+    - night out
+    - dinner date
+    - morning run
+    - reading
+    - spa day
+    - night in
+    - dance party
+
+- lookup: duration
+  examples: |
+    - long
+    - short
 
 regex:
   song:
@@ -450,6 +530,16 @@ regex:
     - pattern: \b(?:[A-Za-z0-9\s'\-\:]+(?:\s(?:of|and)\s[A-Za-z0-9\s'\-]+)?)\b
     - pattern: \b(?:[A-Za-z\s'\-\(\)]+(?:[\:\,\.]+)?)\b
     - pattern: \b(?:[A-Za-z0-9\s'\-]+(?:[\:\,\.]+)?)\b
+
+  mood:
+    - pattern: \b(?:sad|energetic|chill|upbeat|romantic|relaxing|calm|happy|motivational|fun|lively|peaceful|bright|mellow|uplifting|fast-paced|slow|pump-up)\b
+
+  activity:
+    - pattern: \b(?:gym|workout|study|party|road trip|sleep|running|meditation|relaxation|evening|night out|dinner date|morning run|reading|spa day|night in|dance party)\b
+
+  duration:
+    - pattern: \b(?:long|short)\b
+
 
 synonyms:
   position:

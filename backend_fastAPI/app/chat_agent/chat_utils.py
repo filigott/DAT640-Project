@@ -41,6 +41,8 @@ class Intents(Enum):
     add_position_recommended_songs = auto()
     add_all_except_recommended_songs = auto()
 
+    generate_playlist_based_on_description = auto()
+
 
 class Commands(Enum):
     greet = "/greet"
@@ -52,6 +54,7 @@ class Commands(Enum):
     remove = "/remove"
     view = "/view"
     clear = "/clear"
+    recommend = "/recommend"
 
 class ConversationTopic(Enum):
     add_song = auto()

@@ -1,5 +1,5 @@
 from typing import List
-from sqlalchemy import Column, Integer, String, ForeignKey, Table, Float
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, Float, Boolean
 from sqlalchemy.orm import relationship
 
 from .schemas import PlaylistSchema, SongSchema
@@ -26,6 +26,18 @@ class SongModel(DB_Base):
 
     # New normalized title column
     normalized_title = Column(String, nullable=False)
+
+    # Acoustic features
+    acousticness = Column(Float)
+    danceability = Column(Float)
+    energy = Column(Float)
+    instrumentalness = Column(Float)
+    key = Column(Integer)
+    liveness = Column(Float)
+    loudness = Column(Float)
+    mode = Column(Boolean)
+    speechiness = Column(Float)
+    valence = Column(Float)
 
     playlists = relationship('PlaylistModel', secondary=PlaylistSongsTable, back_populates='songs')
 

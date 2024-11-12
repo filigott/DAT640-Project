@@ -71,6 +71,8 @@ class ChatAgent:
                 self.view_playlist()
             case Commands.clear.value:
                 await self.clear_playlist_async()
+            case Commands.recommend.value:
+                await self.recommend_songs_based_on_playlist()
             case _:
                 # Send message to Rasa for intent handling if it's not a command
                 print("Sending message over to Rasa...")
@@ -108,7 +110,7 @@ class ChatAgent:
         if  self.conversation_context.recommend_playlist.state == RecommendPlaylistState.finished:
             self.conversation_context.recommend_playlist.state = RecommendPlaylistState.default
             self.conversation_context.recommend_playlist.pending_songs = [] # Probably not needed
-            return
+            # return
 
         if confidence > 0.7:
             match intent:
@@ -122,6 +124,8 @@ class ChatAgent:
                     await self.song_release_date_position(entities)
                 case Intents.recommend_songs_based_on_playlist:
                     await self.recommend_songs_based_on_playlist()
+                case Intents.generate_playlist_based_on_description:
+                    await self.generate_playlist_based_on_description(entities)
                 case _:
                     await self.handle_more_intents(intent, entities)
             return
@@ -312,7 +316,7 @@ class ChatAgent:
         result = await self.service.add_from_recommendations(entities, self.conversation_context.recommend_playlist.pending_songs)
         if result:
             self.add_response(result.get("message"))
-            for song, i in enumerate(result.get("songs")):
+            for i, song in enumerate(result.get("songs")):
                 self.add_response(f"{i+1}: {song.title}")
     
     
@@ -320,7 +324,7 @@ class ChatAgent:
         result = await self.service.add_from_recommendations_position(entities, self.conversation_context.recommend_playlist.pending_songs)
         if result:
             self.add_response(result.get("message"))
-            for song, i in enumerate(result.get("songs")):
+            for i, song in enumerate(result.get("songs")):
                 self.add_response(f"{i+1}: {song.title}")
 
     
@@ -335,7 +339,15 @@ class ChatAgent:
         self.add_response(intents_list)
         
         self.add_response("For example: Add the song Thriller by Michael Jackson to my playlist")
+    
 
+    async def generate_playlist_based_on_description(self, entities: list, db: Session) -> None:
+        # Filter songs based on entities and inferred playlist length
+        result = await self.service.create_playlist_from_description(entities, db)
+        if result:
+            self.add_response(result.get("message"))
+            for i, song in enumerate(result.get("songs")):
+                self.add_response(f"{i+1}: {song.title}")
 
     def _maybe_send_random_question(self, song_data: SongSchema) -> None:
         if (random.random() < RANDOM_QUESTION_CHANCE):

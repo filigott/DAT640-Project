@@ -166,25 +166,56 @@ def get_songs_by_album(db: Session, album_name: str) -> List[SongModel]:
     songs = db.query(SongModel).filter(SongModel.album.ilike(f"%{album_name}%")).all()
     return songs
 
-def get_recommendations_from_playlist(db: Session, playlist_id: int = 1, num_recommendations: int = 10) -> List[SongModel]:
+
+def filter_and_rank_songs(
+    playlist_songs: List[SongModel],
+    songs_to_filter: List[SongModel],
+    num_recommendations: int
+) -> List[SongModel]:
+    # Extract artists, albums, and titles from the playlist songs
+    artists = {song.artist for song in playlist_songs}
+    albums = {song.album for song in playlist_songs}
+    titles = {song.title for song in playlist_songs}
+
+    # Filter the songs based on relaxed matching (at least one condition met)
+    filtered_songs = [
+        song for song in songs_to_filter
+        if song.artist in artists or song.album in albums and song.title not in titles
+    ]
+
+    # Rank the filtered songs by ID in descending order (higher IDs are better)
+    top_songs = sorted(filtered_songs, key=lambda song: song.id, reverse=True)[:num_recommendations * 5]
+
+    # Randomly sample from the top-ranked songs for variety
+    final_selection = random.sample(top_songs, num_recommendations)
+
+    return final_selection
+
+
+def get_recommendations_from_songs(
+    db: Session,
+    playlist_id: int,
+    songs: Optional[List[SongModel]] = None,
+    num_recommendations: int = 10
+) -> List[SongModel]:
+    # Retrieve playlist songs from the database based on the given playlist_id
     playlist = get_playlist(db, playlist_id)
+    playlist_songs = SongModel.list_to_dto(playlist.songs)
 
-    # artists = set(song['artist'] for song in playlist.songs)
-    # albums = set(song['album'] for song in playlist.songs)
-    # titles = set(song['title'] for song in playlist.songs)
+    # Determine the set of songs to filter: either provided as input or query all songs from DB
+    if songs is None:
+        songs_to_filter = db.query(SongModel).all()
+    else:
+        songs_to_filter = songs
 
-    artists = set(song.artist for song in playlist.songs)
-    albums = set(song.album for song in playlist.songs)
-    titles = set(song.title for song in playlist.songs)
+    # Use the helper function to filter and rank the songs
+    recommended_songs = filter_and_rank_songs(
+        playlist_songs=playlist_songs,
+        songs_to_filter=songs_to_filter,
+        num_recommendations=num_recommendations
+    )
 
-    songs = db.query(SongModel).filter((
-        SongModel.artist.in_(artists)), 
-        SongModel.title.notin_(titles)
-    ).all()
-
-    random_recommendations = random.sample(songs, num_recommendations)
-
-    return random_recommendations
+    return recommended_songs
 
 
 def find_fuzzy_song_matches(
@@ -194,8 +225,8 @@ def find_fuzzy_song_matches(
     album: Optional[str] = None, 
     year: Optional[int] = None
 ) -> List[SongModel]:
-    """Find songs that match the specified criteria with flexible matching."""
-
+    """Find songs that match the specified criteria with flexible matching, considering the song's id as its rank."""
+    
     # Normalize the input title for fuzzy matching
     normalized_title = advanced_normalize_text(title)
 
@@ -209,7 +240,7 @@ def find_fuzzy_song_matches(
     if year:
         query = query.filter(SongModel.year == year)
     
-    # Retrieve initial candidates using the ilike query
+    # Retrieve initial candidates using the ilike query (limiting to 50 for now)
     candidates: List[SongModel] = query.limit(50).all()
 
     print("Num fuzzy song matches candidates: ", len(candidates))
@@ -222,8 +253,11 @@ def find_fuzzy_song_matches(
     
     # Map back to SongModel objects using the index of matches in scored_candidates
     matched_songs = [candidates[idx] for _, score, idx in scored_candidates]
+
+    # Now, we rank the songs based on their original position (id is treated as the rank)
+    ranked_songs = sorted(matched_songs, key=lambda song: song.id)
     
-    return matched_songs[:MAX_NUM_SONGS_SEARCH]
+    return ranked_songs[:MAX_NUM_SONGS_SEARCH]
 
 
 def find_exact_song_match(

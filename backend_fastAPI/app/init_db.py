@@ -8,24 +8,39 @@ from sqlalchemy.orm import Session
 
 def reset_db(db: Session):
     try:
-        # Delete all records from the playlist_songs join table first
-        db.execute(PlaylistSongsTable.delete())
+        # Check if the PlaylistSongsTable exists before trying to delete from it
+        if db.execute("SELECT to_regclass('public.playlist_songs')").fetchone()[0]:
+            db.execute(PlaylistSongsTable.delete())
+            print("Deleted records from playlist_songs table.")
+        
+        # Delete records from SongModel and PlaylistModel if the tables exist
+        if db.execute("SELECT to_regclass('public.songs')").fetchone()[0]:
+            db.query(SongModel).delete()
+            print("Deleted records from songs table.")
+        
+        if db.execute("SELECT to_regclass('public.playlists')").fetchone()[0]:
+            db.query(PlaylistModel).delete()
+            print("Deleted records from playlists table.")
 
-        # Now delete all records from SongModel and PlaylistModel
-        db.query(SongModel).delete()
-        db.query(PlaylistModel).delete()
         db.commit()
 
-        # Reset the primary key sequence to start from 1 (optional)
-        db.execute('ALTER SEQUENCE songs_id_seq RESTART WITH 1')
-        db.execute('ALTER SEQUENCE playlists_id_seq RESTART WITH 1')
-        db.commit()
+        # Reset the primary key sequence if the tables exist
+        if db.execute("SELECT to_regclass('public.songs_id_seq')").fetchone()[0]:
+            db.execute('ALTER SEQUENCE songs_id_seq RESTART WITH 1')
+            print("Reset songs_id_seq.")
+        
+        if db.execute("SELECT to_regclass('public.playlists_id_seq')").fetchone()[0]:
+            db.execute('ALTER SEQUENCE playlists_id_seq RESTART WITH 1')
+            print("Reset playlists_id_seq.")
 
+        db.commit()
+        
         print("Database reset successfully.")
         
     except Exception as e:
         db.rollback()
         print(f"Error resetting the database: {e}")
+
 
 def get_or_create_song(db: Session, title: str, artist: str, album: str, year: int) -> SongModel:
     """Helper function to fetch or create a song in the database."""
@@ -115,7 +130,11 @@ def seed_db_dataset_sqlite(db: Session, sqlite_db_path: str):
         cursor = sqlite_conn.cursor()
 
         # Query the acoustic_features table
-        cursor.execute("SELECT song, artist, album, date, duration_ms, tempo FROM acoustic_features")
+        cursor.execute("""
+            SELECT song, artist, album, date, duration_ms, tempo, acousticness, danceability, energy, 
+                instrumentalness, key, liveness, loudness, mode, speechiness, valence
+            FROM acoustic_features
+        """)
         rows = cursor.fetchall()
 
         print("first row: ", rows[0])
@@ -131,6 +150,18 @@ def seed_db_dataset_sqlite(db: Session, sqlite_db_path: str):
             tempo = row[5] if row[5] is not None else None  # Handle missing tempo
             normalized_title = advanced_normalize_text(title)
 
+            # New acoustic features
+            acousticness = row[6] if row[6] is not None else None
+            danceability = row[7] if row[7] is not None else None
+            energy = row[8] if row[8] is not None else None
+            instrumentalness = row[9] if row[9] is not None else None
+            key = row[10] if row[10] is not None else None
+            liveness = row[11] if row[11] is not None else None
+            loudness = row[12] if row[12] is not None else None
+            mode = row[13] if row[13] is not None else None
+            speechiness = row[14] if row[14] is not None else None
+            valence = row[15] if row[15] is not None else None
+
             song = SongModel(
                 title=title,
                 artist=artist,
@@ -138,7 +169,18 @@ def seed_db_dataset_sqlite(db: Session, sqlite_db_path: str):
                 year=year,
                 duration=duration,
                 tempo=tempo,
-                normalized_title=normalized_title
+                normalized_title=normalized_title,
+
+                acousticness=acousticness,
+                danceability=danceability,
+                energy=energy,
+                instrumentalness=instrumentalness,
+                key=key,
+                liveness=liveness,
+                loudness=loudness,
+                mode=mode,
+                speechiness=speechiness,
+                valence=valence,
             )
             songs.append(song)
 

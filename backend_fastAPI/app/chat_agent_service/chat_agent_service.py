@@ -1,3 +1,4 @@
+import random
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 
@@ -213,7 +214,7 @@ class ChatAgentService:
     
 
     async def recommend_songs_based_on_playlist(self) -> Optional[Dict[str, Any]]:
-        songs = r.get_recommendations_from_playlist(self.db)
+        songs = r.get_recommendations_from_songs(self.db, 1)
         recommended_songs = [song.to_dto() for song in songs]
         return {"message": "Recommendations based on your playlist: ", "songs": recommended_songs}
 
@@ -296,3 +297,115 @@ class ChatAgentService:
 
         # Return an empty list if no matches are found
         return []
+    
+
+    def match_mood(self, song: dict, mood: str) -> bool:
+        """Determine if a song matches the given mood based on features."""
+        mood_match = False
+        if mood == "sad":
+            mood_match = song['valence'] < 0.3  # Example: low valence means sad
+        elif mood == "energetic":
+            mood_match = song['energy'] > 0.7  # High energy
+        elif mood == "chill":
+            mood_match = song['valence'] > 0.5 and song['energy'] < 0.3  # Mellow and relaxed
+        # Add more mood matching rules...
+        return mood_match
+    
+
+    def match_activity(self, song: dict, activity: str) -> bool:
+            """Match songs to activities by their tempo, energy, and danceability."""
+            activity_match = False
+            if activity == "gym":
+                activity_match = song['energy'] > 0.7  # High energy for gym
+            elif activity == "study":
+                activity_match = song['instrumentalness'] > 0.5  # More instrumental songs for study
+            elif activity == "party":
+                activity_match = song['danceability'] > 0.7  # Danceable songs for party
+            # Add more activity matching rules...
+            return activity_match
+
+
+    
+    async def create_playlist_from_description(self, description: str) -> Optional[Dict[str, Any]]:
+        # Infer playlist length based on description
+        playlist_length = self.infer_playlist_length(description)
+
+        # Use a recommendation system or fetch songs based on the description
+        recommended_songs = self.filter_songs_by_playlist_description(description, playlist_length)
+
+        # Return the playlist with the recommended songs
+        return {"message": f"Created a playlist with {len(recommended_songs)} songs based on your description: '{description}'",
+                "songs": recommended_songs}
+
+
+
+    def infer_playlist_length(self, entities: list) -> int:
+        """
+        Infer the playlist length in minutes based on user input and context.
+        This function considers the 'duration' entity, and intelligently uses other entities like 'activity' 
+        to infer a reasonable playlist length.
+        """
+        # Extract the duration entity (if provided)
+        duration = self.get_entity_value(entities, "duration")
+        
+        # If the user specified a duration, return a playlist length based on that
+        if duration:
+            if duration == "long":
+                # For "long", set the playlist length to around 60-90 minutes
+                return 75  # For example, an average of 75 minutes for a long playlist
+            elif duration == "short":
+                # For "short", set the playlist length to around 20-40 minutes
+                return 30  # Example: 30 minutes for a short playlist
+        
+        # If no duration entity is specified, we infer based on activity or mood
+        
+        activity = self.get_entity_value(entities, "activity")
+        
+        if activity:
+            # Infer based on the activity
+            if activity in ["gym", "workout"]:
+                # A gym/workout session might require 45-60 minutes of music
+                return 50
+            elif activity in ["study", "study session"]:
+                # A study session might require 20-30 minutes of background music
+                return 25
+            elif activity in ["party", "road trip"]:
+                # A party or road trip might require a longer playlist, 60-90 minutes
+                return 75
+            elif activity in ["sleep", "meditation", "relaxation"]:
+                # A sleep or meditation playlist might be long, around 60-90 minutes
+                return 80
+
+        # Fallback: Default to an average playlist length
+        return 60  # Default length if no duration or activity is specified
+    
+
+    async def filter_songs_by_playlist_description(self, mood: Optional[str], activity: Optional[str], playlist_length_minutes: int) -> List[dict]:
+        # Query the database to get all songs
+        songs = SongModel.list_to_dto(r.get_all_songs())
+
+        # Filter songs by mood and activity
+        if mood:
+            songs = [song for song in songs if self.match_mood(song, mood)]
+        if activity:
+            songs = [song for song in songs if self.match_activity(song, activity)]
+
+        # Calculate the average song duration from the list of songs
+        # Assuming each song has a 'duration' field in seconds (e.g., 180 seconds = 3 minutes)
+        total_duration = sum(song.duration for song in songs)
+        num_songs = len(songs)
+        
+        if num_songs == 0:
+            return []  # If no songs are found after filtering, return an empty list
+        
+        average_song_duration = total_duration / num_songs  # average song duration in seconds
+        average_song_duration_minutes = average_song_duration / 60  # convert to minutes
+        
+        # Calculate how many songs fit in the requested playlist length
+        num_songs_needed = int(playlist_length_minutes / average_song_duration_minutes)
+        
+        # If there are more songs than needed, select randomly
+        if len(songs) > num_songs_needed:
+            songs = random.sample(songs, num_songs_needed)
+
+        return songs
