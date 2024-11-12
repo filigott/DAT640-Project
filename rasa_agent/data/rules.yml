@@ -1,13 +1,32 @@
-version: "3.1"
+# version: "3.1"
 
-rules:
+# rules:
+#   - rule: Mark recommendations as provided
+#     steps:
+#       - intent: recommend_songs_based_on_playlist
+#       - slot_was_set:
+#           - recommendations_provided: true
 
-- rule: Say goodbye anytime the user says goodbye
-  steps:
-  - intent: goodbye
-  - action: utter_goodbye
+#   - rule: Add all recommended songs only if recommendations are provided
+#     condition:
+#       - slot_was_set:
+#           - recommendations_provided: true
+#     steps:
+#       - intent: add_all_recommended_songs
+#       - action: utter_added_all_recommended_songs
 
-- rule: Say 'I am a bot' anytime the user challenges
-  steps:
-  - intent: bot_challenge
-  - action: utter_iamabot
+#   - rule: Add a specific recommended song only if recommendations are provided
+#     condition:
+#       - slot_was_set:
+#           - recommendations_provided: true
+#     steps:
+#       - intent: add_position_recommended_songs
+#       - action: utter_added_position_recommended_song
+
+#   - rule: Add all except specific recommended songs only if recommendations are provided
+#     condition:
+#       - slot_was_set:
+#           - recommendations_provided: true
+#     steps:
+#       - intent: add_all_except_recommended_songs
+#       - action: utter_added_all_except_recommended_songs

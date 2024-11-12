@@ -8,24 +8,39 @@ from sqlalchemy.orm import Session
 
 def reset_db(db: Session):
     try:
-        # Delete all records from the playlist_songs join table first
-        db.execute(PlaylistSongsTable.delete())
+        # Check if the PlaylistSongsTable exists before trying to delete from it
+        if db.execute("SELECT to_regclass('public.playlist_songs')").fetchone()[0]:
+            db.execute(PlaylistSongsTable.delete())
+            print("Deleted records from playlist_songs table.")
+        
+        # Delete records from SongModel and PlaylistModel if the tables exist
+        if db.execute("SELECT to_regclass('public.songs')").fetchone()[0]:
+            db.query(SongModel).delete()
+            print("Deleted records from songs table.")
+        
+        if db.execute("SELECT to_regclass('public.playlists')").fetchone()[0]:
+            db.query(PlaylistModel).delete()
+            print("Deleted records from playlists table.")
 
-        # Now delete all records from SongModel and PlaylistModel
-        db.query(SongModel).delete()
-        db.query(PlaylistModel).delete()
         db.commit()
 
-        # Reset the primary key sequence to start from 1 (optional)
-        db.execute('ALTER SEQUENCE songs_id_seq RESTART WITH 1')
-        db.execute('ALTER SEQUENCE playlists_id_seq RESTART WITH 1')
-        db.commit()
+        # Reset the primary key sequence if the tables exist
+        if db.execute("SELECT to_regclass('public.songs_id_seq')").fetchone()[0]:
+            db.execute('ALTER SEQUENCE songs_id_seq RESTART WITH 1')
+            print("Reset songs_id_seq.")
+        
+        if db.execute("SELECT to_regclass('public.playlists_id_seq')").fetchone()[0]:
+            db.execute('ALTER SEQUENCE playlists_id_seq RESTART WITH 1')
+            print("Reset playlists_id_seq.")
 
+        db.commit()
+        
         print("Database reset successfully.")
         
     except Exception as e:
         db.rollback()
         print(f"Error resetting the database: {e}")
+
 
 def get_or_create_song(db: Session, title: str, artist: str, album: str, year: int) -> SongModel:
     """Helper function to fetch or create a song in the database."""
@@ -115,21 +130,44 @@ def seed_db_dataset_sqlite(db: Session, sqlite_db_path: str):
         cursor = sqlite_conn.cursor()
 
         # Query the acoustic_features table
-        cursor.execute("SELECT song, artist, album, date, duration_ms, tempo FROM acoustic_features")
+        cursor.execute("""
+            SELECT song, artist, album, date, duration_ms, tempo, acousticness, danceability, energy, 
+                instrumentalness, key, liveness, loudness, mode, speechiness, valence
+            FROM acoustic_features
+        """)
         rows = cursor.fetchall()
 
         print("first row: ", rows[0])
 
+        # num_skipped = 0
+
         # Transform and insert into PostgreSQL
         songs = []
         for row in rows:
-            title = row[0] if row[0] is not None else 'Unknown Title'  # Handle missing titles
-            artist = row[1] if row[1] is not None else 'Unknown Artist'  # Handle missing artists
-            album = row[2] if row[2] is not None else 'Unknown Album'  # Handle missing albums
-            year = int(row[3].split('-')[0]) if row[3] else None  # Extract year from release date
-            duration = (row[4] // 1000) if row[4] is not None else None  # Handle missing duration
-            tempo = row[5] if row[5] is not None else None  # Handle missing tempo
+            title = row[0] if row[0] else 'Unknown Title'  # Set default for missing title
+            artist = row[1] if row[1] else 'Unknown Artist'  # Set default for missing artist
+            album = row[2] if row[2] else 'Unknown Album'  # Set default for missing album
+            year = int(row[3].split('-')[0]) if row[3] else 0  # Default to 0 if no year
+            duration = row[4] // 1000 if row[4] else 0  # Default to 0 if no duration
+            tempo = row[5] if row[5] is not None else 0  # Default to 0 if no tempo
             normalized_title = advanced_normalize_text(title)
+
+            # New acoustic features
+            acousticness = row[6] if row[6] is not None else 0  # Default to 0 if no acousticness
+            danceability = row[7] if row[7] is not None else 0  # Default to 0 if no danceability
+            energy = row[8] if row[8] is not None else 0  # Default to 0 if no energy
+            instrumentalness = row[9] if row[9] is not None else 0  # Default to 0 if no instrumentalness
+            key = row[10] if row[10] is not None else 0  # Default to 0 if no key
+            liveness = row[11] if row[11] is not None else 0  # Default to 0 if no liveness
+            loudness = row[12] if row[12] is not None else 0  # Default to 0 if no loudness
+            mode = bool(row[13]) if bool(row[13]) is not None else False  # Default to False if no mode
+            speechiness = row[14] if row[14] is not None else 0  # Default to 0 if no speechiness
+            valence = row[15] if row[15] is not None else 0  # Default to 0 if no valence
+
+            # # Skip song if any required feature is missing
+            # if not all([title, artist, album, year, duration, tempo, acousticness, danceability, energy, instrumentalness, key, liveness, loudness, mode, speechiness, valence]):
+            #     num_skipped += 1
+            #     continue  # Skip this song
 
             song = SongModel(
                 title=title,
@@ -138,7 +176,18 @@ def seed_db_dataset_sqlite(db: Session, sqlite_db_path: str):
                 year=year,
                 duration=duration,
                 tempo=tempo,
-                normalized_title=normalized_title
+                normalized_title=normalized_title,
+
+                acousticness=acousticness,
+                danceability=danceability,
+                energy=energy,
+                instrumentalness=instrumentalness,
+                key=key,
+                liveness=liveness,
+                loudness=loudness,
+                mode=mode,
+                speechiness=speechiness,
+                valence=valence,
             )
             songs.append(song)
 
@@ -153,6 +202,7 @@ def seed_db_dataset_sqlite(db: Session, sqlite_db_path: str):
             db.commit()
 
         print(f"Inserted {len(songs)} total songs from SQLite to PostgreSQL.")
+        # print(f"Num skipped: {num_skipped}")
 
         # Add the demo songs to the playlist with id = 1
         add_demo_songs_to_playlist(db, playlist_id=1)
