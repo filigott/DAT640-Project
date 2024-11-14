@@ -9,7 +9,7 @@ class UserProfile:
         id: int,
         liked_artists: List[str],
         disliked_artists: List[str],
-        liked_songs: List[str],
+        liked_songs: Dict[str, str],
         disliked_songs: List[str],
         goal: UserGoal,
         allowed_actions: Optional[List[UserAction]] = None,
@@ -104,19 +104,23 @@ user_profiles = [
         ],
         disliked_songs=["Baby"],
         goal=UserGoal(
-            goal_type=UserGoalType.create_playlist,
-            goal_text="Create a playlist with slow ballads",
-            max_songs=5
+            goal_type=UserGoalType.ask_questions,
+            goal_text="Get to know about liked songs and songs of liked artists",
+            max_questions=5
         ),
         allowed_actions=[
-            UserAction.add_song_to_playlist,
-            UserAction.get_list_of_songs_in_playlist,
+            # UserAction.add_song_to_playlist,
+            # UserAction.get_list_of_songs_in_playlist,
+            UserAction.ask_about_song_release_date,
+            UserAction.ask_about_songs_of_artist,
             UserAction.exit_conversation
         ],
         action_weights={
-            UserAction.add_song_to_playlist: 60,
-            UserAction.get_list_of_songs_in_playlist: 30,
-            UserAction.exit_conversation: 10,
+            # UserAction.add_song_to_playlist: 20,
+            # UserAction.get_list_of_songs_in_playlist: 10,
+            UserAction.ask_about_song_release_date: 45,
+            UserAction.ask_about_songs_of_artist: 45,
+            UserAction.exit_conversation: 10
         }
     ),
     UserProfile(
@@ -130,7 +134,7 @@ user_profiles = [
         ],
         disliked_songs=["Baby"],
         goal=UserGoal(
-            goal_type=UserGoalType.receive_recommendations,
+            goal_type=UserGoalType.create_playlist,
             goal_text="Create a playlist. But also not.",
             max_songs=3
         ),

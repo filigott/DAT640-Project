@@ -4,7 +4,7 @@ from typing import Dict, Optional, List
 # Enum for different user goals
 class UserGoalType(Enum):
     create_playlist = 0
-    ask_album_details = auto()
+    ask_questions = auto()
     receive_recommendations = auto()
 
 # Enum for possible actions that a user can take
@@ -13,9 +13,8 @@ class UserAction(Enum):
     get_list_of_songs_in_playlist = auto()
 
     add_song_to_playlist_by_artist = auto()
-    ask_about_song = auto()
-    ask_about_album = auto()
-    ask_about_artist = auto()
+    ask_about_song_release_date = auto()
+    ask_about_songs_of_artist = auto()
 
     request_song_recommendations = auto()
     accept_recommendations = auto()
@@ -24,7 +23,7 @@ class UserAction(Enum):
 
 # Goal class for storing the user's goal information
 class UserGoal:
-    def __init__(self, goal_type: UserGoalType, goal_text: str, max_turns: Optional[int] = None, max_songs: Optional[int] = None):
+    def __init__(self, goal_type: UserGoalType, goal_text: str, max_turns: Optional[int] = None, max_songs: Optional[int] = None, max_questions: Optional[int] = None):
         """
         Initializes the goal object with a description.
         
@@ -37,6 +36,7 @@ class UserGoal:
         self.goal_text = goal_text
         self.max_turns = max_turns
         self.max_songs = max_songs
+        self.max_questions = max_questions
 
 
 # Default actions for each goal type
@@ -53,8 +53,8 @@ def default_actions_for_goal(goal_type: UserGoalType) -> List[UserAction]:
             UserAction.accept_recommendations, 
             UserAction.reject_recommendations
             ]
-    elif goal_type == UserGoalType.ask_album_details:
-        return [UserAction.ask_about_album]
+    elif goal_type == UserGoalType.ask_questions:
+        return [UserAction.ask_about_songs_of_artist, UserAction.ask_about_song_release_date]
     else:
         return [UserAction.exit_conversation]
     
@@ -78,10 +78,10 @@ def default_action_weights(goal_type: UserGoalType) -> Dict[UserAction, int]:
             UserAction.reject_recommendations: 30,  # 30% chance to reject recommendations
             UserAction.exit_conversation: 10,  # 10% chance to exit the conversation
         }
-    elif goal_type == UserGoalType.ask_album_details:
+    elif goal_type == UserGoalType.ask_questions:
         return {
-            UserAction.ask_about_album: 80,  # 80% chance to ask about an album
-            UserAction.exit_conversation: 20,  # 20% chance to exit the conversation
+            UserAction.ask_about_song_release_date: 50,
+            UserAction.ask_about_songs_of_artist: 50
         }
     else:
         return {

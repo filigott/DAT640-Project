@@ -16,13 +16,11 @@ class WebSocketClient:
             self.connected = True
             print(f"[Client {self.user_id}] Connected to WebSocket")
         except websockets.exceptions.ConnectionClosedError as e:
-            # Check if the service restart is the reason for the closure
-            if e.code == 1012:
-                print(f"[Client {self.user_id}] Connection closed due to service restart (1012). No reconnection attempts will be made.")
-            else:
-                print(f"[Client {self.user_id}] Connection closed unexpectedly: {e}")
+            print(f"[Client {self.user_id}] Connection closed unexpectedly: {e}")
+            self.connected = False  # Set connected to False immediately on failure
         except Exception as e:
             print(f"[Client {self.user_id}] Failed to connect: {e}")
+            self.connected = False  # Ensure connected is set to False on any error
 
     async def send_message(self, message):
         """Send a message through the WebSocket connection."""
@@ -35,8 +33,10 @@ class WebSocketClient:
             await self.ws_connection.send(json.dumps({"message": message}))
         except websockets.exceptions.ConnectionClosedError as e:
             print(f"[Client {self.user_id}] Connection closed while sending message: {e}")
+            self.connected = False  # Exit and prevent further actions if closed
         except Exception as e:
             print(f"[Client {self.user_id}] Error while sending message: {e}")
+            self.connected = False  # Immediately set connected to False if an error occurs
 
     async def receive_response(self):
         """Receive a response from the WebSocket connection."""
@@ -51,13 +51,11 @@ class WebSocketClient:
             print(f"[Client {self.user_id}] Received response: {resp}")
             return resp
         except websockets.exceptions.ConnectionClosedError as e:
-            # Log once and stop further attempts to receive
-            if e.code == 1012:
-                print(f"[Client {self.user_id}] Connection closed due to service restart (1012). No further attempts to receive will be made.")
-            else:
-                print(f"[Client {self.user_id}] Connection closed while receiving response: {e}")
+            print(f"[Client {self.user_id}] Connection closed while receiving response: {e}")
+            self.connected = False  # Prevent further attempts to receive if closed
         except Exception as e:
             print(f"[Client {self.user_id}] Error while receiving response: {e}")
+            self.connected = False  # Ensure connected is False if an error occurs
         return None
 
     async def disconnect(self):
@@ -73,5 +71,7 @@ class WebSocketClient:
             print(f"[Client {self.user_id}] Disconnected from WebSocket")
         except websockets.exceptions.ConnectionClosedError as e:
             print(f"[Client {self.user_id}] Connection was already closed: {e}")
+            self.connected = False  # Mark as disconnected if it wasn’t already
         except Exception as e:
             print(f"[Client {self.user_id}] Error while disconnecting: {e}")
+            self.connected = False  # Ensure the connected state is False on error
