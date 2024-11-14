@@ -246,19 +246,24 @@ class ChatAgentService:
             pos_index = self.position_map.get(position)
             if pos_index is None:
                 pos_index = int(position) - 1
-            print(pos_index)
+            else:
+                pos_index -= 1
             number = self.number_map.get(number, number)
+            print(pos_index)
+            print(number)
 
             # Wants to add last(position) two(number) songs
             if pos_index == -1:
                 cache.reverse()
                 song_ids = [song.id for song in cache[:number]]
             else:
-                song_ids = [song.id for song in cache[pos_index:number]]
+                song_ids = [song.id for song in cache[pos_index:pos_index+number]]
         elif position and not number:
-            pos_index = self.position_map.get(position)  
+            pos_index = self.position_map.get(position)
             if pos_index is None:
                 pos_index = int(position) - 1
+            else:
+                pos_index -= 1
             song_ids.append(cache[pos_index].id)
 
         result = await self.add_multiple_songs_to_playlist_async(song_ids)

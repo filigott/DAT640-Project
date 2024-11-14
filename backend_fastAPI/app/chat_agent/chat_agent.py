@@ -321,7 +321,7 @@ class ChatAgent:
         if result:
             self.add_response(result.get("message"))
             songs: List[SongSchema] = result.get("songs")
-            self._respond_with_song_details(songs, show_index=True)
+            self._respond_with_song_details(songs, show_index=False)
 
     
     async def add_position_recommended_songs(self, entities):
@@ -329,14 +329,14 @@ class ChatAgent:
         if result:
             self.add_response(result.get("message"))
             songs: List[SongSchema] = result.get("songs")
-            self._respond_with_song_details(songs, show_index=True)
+            self._respond_with_song_details(songs, show_index=False)
     
     async def add_except_recommended_songs(self, entities):
         result = await self.service.add_from_recommendations_except(entities, self.conversation_context.recommend_playlist.pending_songs)
         if result:
             self.add_response(result.get("message"))
             songs = result.get("songs")
-            self._respond_with_song_details(songs, show_index=True)
+            self._respond_with_song_details(songs, show_index=False)
 
 
     async def generate_playlist_based_on_description(self, entities) -> None:
