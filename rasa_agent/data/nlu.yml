@@ -389,7 +389,15 @@ nlu:
     - Could you add the [last](position) track recommended?
     - Add song number [2](position)
     - Add [2](postion) and [3](position)
-    - Add the [fifth](position), [sixth](position) and [seventh](position) song 
+    - Add the [fifth](position), [sixth](position) and [seventh](position) song
+    - Add the [first](position) [five](number)
+    - Include the [second](position) [three](number) songs in my playlist.
+    - Add the [third](position) [two](number) recommended tracks.
+    - Can you add the [first](position) [four](number) songs to my playlist?
+    - Add the [last](position) [three](number) songs to my list.
+    - Put the [second](position) [four](number) tracks into my playlist.
+    - Include the [third](position) [five](number) songs.
+    - Add the [first](position) [ten](number) suggested songs.
 
 - intent: add_all_except_recommended_songs
   examples: |
