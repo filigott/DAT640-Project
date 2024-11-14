@@ -201,7 +201,7 @@ def filter_and_rank_songs(
         # Filter the songs based on relaxed matching (at least one condition met)
         filtered_songs = [
             song for song in songs_to_filter
-            if song.artist in artists or song.album in albums and song.title not in titles
+            if (song.artist in artists or song.album in albums) and song.title not in titles
         ]
 
     print("Num filtered song in filter_and_rank_songs: ", len(filtered_songs))
@@ -209,7 +209,7 @@ def filter_and_rank_songs(
         return []
 
     # Rank the filtered songs by ID in descending order (higher IDs are better)
-    top_songs = sorted(filtered_songs, key=lambda song: song.id, reverse=False)[:num_recommendations * 20]
+    top_songs = sorted(filtered_songs, key=lambda song: song.id, reverse=False)[:num_recommendations * 5]
 
     print(f"Num top songs after sorting and limiting: {len(top_songs)}")
 
